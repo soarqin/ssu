@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lemon", "lemon\lemon.vcxproj", "{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ssuParser", "ssuParser\ssuParser.vcxproj", "{14C89DB5-943E-4E24-9D98-9E03F440473E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC} = {F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libssu", "libssu\libssu.vcxproj", "{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}.Debug|Win32.Build.0 = Debug|Win32
+		{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}.Release|Win32.ActiveCfg = Release|Win32
+		{F70FD7BC-5B6B-477A-8A7F-290ABDFC1EDC}.Release|Win32.Build.0 = Release|Win32
+		{14C89DB5-943E-4E24-9D98-9E03F440473E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{14C89DB5-943E-4E24-9D98-9E03F440473E}.Debug|Win32.Build.0 = Debug|Win32
+		{14C89DB5-943E-4E24-9D98-9E03F440473E}.Release|Win32.ActiveCfg = Release|Win32
+		{14C89DB5-943E-4E24-9D98-9E03F440473E}.Release|Win32.Build.0 = Release|Win32
+		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Debug|Win32.Build.0 = Debug|Win32
+		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Release|Win32.ActiveCfg = Release|Win32
+		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
