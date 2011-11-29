@@ -12,8 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ssuObject.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ReferredObject.h" />
     <ClInclude Include="ssuObject.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

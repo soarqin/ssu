@@ -1,8 +1,10 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <cstdarg>
 #include <map>
 #include <string>
+#include <vector>
 
 #ifdef NDEBUG
 #define printf_debug(fmt, ...)
@@ -45,6 +47,34 @@ static unsigned int str_to_uint(const char * str)
 	return result;
 }
 
+std::string capitalize(const std::string& oldName, bool capitalFirst = false)
+{
+	std::string result;
+	bool needCapital = capitalFirst;
+	auto it = oldName.begin();
+	while(it != oldName.end() && (*it) == '_')
+		++ it;
+	for(; it != oldName.end(); ++ it)
+	{
+		if((*it) == '_')
+			needCapital = true;
+		else
+		{
+			if(needCapital)
+			{
+				if((*it) >= 'a' && (*it) <= 'z')
+					result += (*it) - 32;
+				else
+					result += *it;
+				needCapital = false;
+			}
+			else
+				result += *it;
+		}
+	}
+	return result;
+}
+
 struct FieldDef
 {
 	FieldDef(): order(0), constraint(0), type(0) {}
@@ -75,7 +105,8 @@ struct EnumDef
 		vals.clear();
 	}
 	std::string name;
-	std::map<std::string, EnumVal *> vals;
+	std::map<int, EnumVal *> vals;
+	std::map<std::string, EnumVal *> valMap;
 	std::string comment;
 };
 
@@ -104,8 +135,11 @@ struct StructDef
 	std::string name;
 	StructDef * parent;
 	std::map<std::string, struct StructDef *> structs;
+	std::vector<struct StructDef *> structList;
 	std::map<std::string, struct EnumDef *> enums;
+	std::vector<struct EnumDef *> enumList;
 	std::map<unsigned int, struct FieldDef *> fields;
+	std::map<std::string, struct FieldDef *> fieldMap;
 	std::string comment;
 };
 
@@ -137,7 +171,9 @@ struct SSUStruct
 	std::string packageName;
 	std::map<std::string, std::string> options;
 	std::map<std::string, StructDef *> structs;
+	std::vector<StructDef *> structList;
 	std::map<std::string, EnumDef *> enums;
+	std::vector<EnumDef *> enumList;
 	StructDef * currentStruct;
 	EnumDef * currentEnum;
 	int order, constraint, type;
@@ -165,13 +201,35 @@ static void setOption(SSUStruct * st)
 static void addEnum(SSUStruct * st)
 {
 	EnumDef * ed = new EnumDef;
+	if(st->currentStruct == NULL)
+	{
+		if(st->enums.find(st->name) != st->enums.end())
+		{
+			fprintf(stderr, "Repeated enum name! %s\n", st->name);
+			exit(0);
+		}
+	}
+	else
+	{
+		if(st->currentStruct->enums.find(st->name) != st->currentStruct->enums.end())
+		{
+			fprintf(stderr, "Repeated enum name! %s\n", st->name);
+			exit(0);
+		}
+	}
 	ed->name = st->name;
 	ed->comment = st->comment;
 	st->comment[0] = 0;
 	if(st->currentStruct == NULL)
+	{
 		st->enums[ed->name] = ed;
+		st->enumList.push_back(ed);
+	}
 	else
+	{
 		st->currentStruct->enums[ed->name] = ed;
+		st->currentStruct->enumList.push_back(ed);
+	}
 	st->currentEnum = ed;
 }
 
@@ -188,17 +246,42 @@ static void addEnumVal(SSUStruct * st)
 		fprintf(stderr, "Wrong enum defines!\n");
 		exit(0);
 	}
+	if(st->currentEnum->vals.find(st->order) != st->currentEnum->vals.end())
+	{
+		fprintf(stderr, "Repeated enum val order! %d\n", st->order);
+		exit(0);
+	}
+	if(st->currentEnum->valMap.find(st->name) != st->currentEnum->valMap.end())
+	{
+		fprintf(stderr, "Repeated enum val name! %s\n", st->name);
+		exit(0);
+	}
 	EnumVal * ev = new EnumVal;
 	ev->name = st->name;
 	ev->val = st->order;
 	ev->comment = st->comment;
 	st->comment[0] = 0;
-	st->currentEnum->vals[st->name] = ev;
+	st->currentEnum->vals[ev->val] = ev;
+	st->currentEnum->valMap[ev->name] = ev;
 }
 
 static void addStruct(SSUStruct * st)
 {
 	printf_debug("Add Struct\n");
+	bool repeat;
+	if(st->currentStruct != NULL)
+	{
+		repeat = st->currentStruct->structs.find(st->name) != st->currentStruct->structs.end();
+	}
+	else
+	{
+		repeat = st->structs.find(st->name) != st->structs.end();
+	}
+	if(repeat)
+	{
+		fprintf(stderr, "Repeated struct name %s!\n", st->name);
+		exit(0);
+	}
 	StructDef * sd = new StructDef;
 	sd->id = st->order;
 	sd->name = st->name;
@@ -206,9 +289,15 @@ static void addStruct(SSUStruct * st)
 	sd->comment = st->comment;
 	st->comment[0] = 0;
 	if(st->currentStruct == NULL)
+	{
 		st->structs[sd->name] = sd;
+		st->structList.push_back(sd);
+	}
 	else
+	{
 		st->currentStruct->structs[sd->name] = sd;
+		st->currentStruct->structList.push_back(sd);
+	}
 	st->currentStruct = sd;
 }
 
@@ -232,9 +321,25 @@ static void appendField(SSUStruct * st)
 		fprintf(stderr, "Wrong field!\n");
 		exit(0);
 	}
-	if(st->currentStruct->fields.find(st->order) != st->currentStruct->fields.end())
+	if(st->order == 0)
 	{
-		fprintf(stderr, "Repeated order number!\n");
+		if(st->currentStruct->fields.empty())
+			st->order = 1;
+		else
+		{
+			auto it = st->currentStruct->fields.end();
+			-- it;
+			st->order = it->second->order + 1;
+		}
+	}
+	else if(st->currentStruct->fields.find(st->order) != st->currentStruct->fields.end())
+	{
+		fprintf(stderr, "Repeated order number %d!\n", st->order);
+		exit(0);
+	}
+	if(st->currentStruct->fieldMap.find(st->name) != st->currentStruct->fieldMap.end())
+	{
+		fprintf(stderr, "Repeated field name %s!\n", st->name);
 		exit(0);
 	}
 	if(st->type == TYPE_CUSTOM)
@@ -246,7 +351,7 @@ static void appendField(SSUStruct * st)
 			found = st->structs.find(st->tname) != st->structs.end() || st->enums.find(st->tname) != st->enums.end();
 		if(!found)
 		{
-			fprintf(stderr, "Wrong custom field type!\n");
+			fprintf(stderr, "Wrong custom field type %s!\n", st->tname);
 			exit(0);
 		}
 	}
@@ -260,6 +365,7 @@ static void appendField(SSUStruct * st)
 	fd->comment = st->comment;
 	st->comment[0] = 0;
 	st->currentStruct->fields[st->order] = fd;
+	st->currentStruct->fieldMap[st->name] = fd;
 }
 
 #include "ssu.h"
@@ -375,6 +481,8 @@ static char * extractComment(char * s, int& err)
 		push(parser, &ssus, tmpStr.c_str()); \
 	}
 
+void process(SSUStruct&);
+
 int main(int, char *[])
 {
 	void * parser = ssuParserAlloc(malloc);
@@ -467,13 +575,239 @@ int main(int, char *[])
 	ssuParser(parser, 0, NULL, &ssus);
 	ssuParserFree(parser, free);
 
-	for(auto it = ssus.structs.begin(); it != ssus.structs.end(); ++ it)
+	process(ssus);
+	return 0;
+}
+
+int indentSize = 2;
+
+void fprintIndent(int indent, FILE * fp, const char * pattern, ...)
+{
+	va_list argp;
+	va_start(argp, pattern);
+	for(int i = 0; i < indent; ++ i)
+		fputc(' ', fp);
+	vfprintf(fp, pattern, argp);
+	va_end(argp);
+}
+
+char * sprintIndent(int indent, char * str, const char * pattern, ...)
+{
+	va_list argp;
+	memset(str, ' ', indent);
+	str[indent] = 0;
+	va_start(argp, pattern);
+	vsprintf(str + indent, pattern, argp);
+	va_end(argp);
+	return str;
+}
+
+void printEnum(std::vector<EnumDef *>& ed, int indent)
+{
+	for(auto it = ed.begin(); it != ed.end(); ++ it)
 	{
-		printf("Struct %s:\n", it->second->name.c_str());
-		for(auto it2 = it->second->fields.begin(); it2 != it->second->fields.end(); ++ it2)
+		fprintIndent(indent, stdout, "enum %s\n", (*it)->name.c_str());
+		fprintIndent(indent, stdout, "{\n");
+		indent += indentSize;
+		for(auto it2 = (*it)->vals.begin(); it2 != (*it)->vals.end(); ++ it2)
 		{
-			printf("  Field [%d,%d] %s: %d    comment: %s\n", it2->second->order, it2->second->constraint, it2->second->name.c_str(), it2->second->type, it2->second->comment.c_str());
+			fprintIndent(indent, stdout, "%s = %d,\n", it2->second->name, it2->second->val);
+		}
+		indent -= indentSize;
+	}
+}
+
+void printField(std::string& pstr, std::string& rstr, std::string& cstr, std::string& dstr, bool useRef, int constraint, int order, const std::string& type, const std::string& name, const std::string& defVal, int indent)
+{
+	char tmpStr[1024];
+
+	std::string lName = capitalize(name);
+	std::string uName = capitalize(name, true);
+
+	if(constraint == 1 || constraint == 2)
+	{
+		if(useRef)
+			rstr += sprintIndent(indent, tmpStr, "ssu::ReferredObject<%s> _%s;\n\n", type.c_str(), name.c_str());
+		else
+			rstr += sprintIndent(indent, tmpStr, "%s _%s;\n\n", type.c_str(), name.c_str());
+
+		if(constraint == 1)
+		{
+			if(useRef)
+			{
+				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s() const { return _%s; }\n", type.c_str(), lName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline void set%s(const %s& val__) { _%s = val__; }\n", uName.c_str(), type.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline %s * mutable%s() { return &_%s; }\n", type.c_str(), uName.c_str(), name.c_str());
+			}
+			else
+			{
+				pstr += sprintIndent(indent, tmpStr, "inline %s %s() const { return _%s; }\n", type.c_str(), lName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline void set%s(%s val__) { _%s = val__; }\n", uName.c_str(), type.c_str(), name.c_str());
+			}
+		}
+		else
+		{
+			if(useRef)
+			{
+				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s() const { return _%s; }\n", type.c_str(), lName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline void set%s(const %s& val__) { _%s = val__; _isSetFlag[%d] |= 0x%02X; }\n", uName.c_str(), type.c_str(), name.c_str(), order / 32, 1 << (order % 32));
+				pstr += sprintIndent(indent, tmpStr, "inline %s * mutable%s() { _isSetFlag[%d] |= 0x%02X; return _%s.getMutable(); }\n", type.c_str(), uName.c_str(), order / 32, 1 << (order % 32), name.c_str());
+			}
+			else
+			{
+				pstr += sprintIndent(indent, tmpStr, "inline %s %s() const { return _%s; }\n", type.c_str(), lName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline void set%s(%s val__) { _%s = val__; _isSetFlag[%d] |= 0x%02X; }\n", uName.c_str(), type.c_str(), name.c_str(), order / 32, 1 << (order % 32));
+			}
+			pstr += sprintIndent(indent, tmpStr, "inline bool has%s() { return (_isSetFlag[%d] & 0x%02X) > 0; }\n", uName.c_str(), order / 32, 1 << (order % 32));
+		}
+		if(!defVal.empty())
+		{
+			if(!cstr.empty())
+				cstr += ", ";
+			else
+				cstr += ": ";
+			cstr += sprintIndent(0, tmpStr, "_%s(%s)", name.c_str(), defVal.c_str());
 		}
 	}
-	return 0;
+	else
+	{
+		if(useRef)
+		{
+			rstr += sprintIndent(indent, tmpStr, "ssu::vector<%s *> _%s;\n\n", type.c_str(), name.c_str());
+
+			pstr += sprintIndent(indent, tmpStr, "inline const %s& %s(size_t index__) const { return *_%s[index__]; }\n", type.c_str(), lName.c_str(), name.c_str());
+			pstr += sprintIndent(indent, tmpStr, "inline %s * add%s() { %s * val__ = new(std::nothrow) %s; if(val__ == NULL) return NULL; _%s.push_back(val__); return val__; }\n", type.c_str(), uName.c_str(), type.c_str(), type.c_str(), name.c_str());
+			pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
+
+			dstr += sprintIndent(indent + indentSize, tmpStr, "for(std::vector<%s *>::iterator iter = _%s.begin(); iter != _%s.end(); ++ iter) { delete *iter; }\n", type.c_str(), name.c_str(), name.c_str());
+		}
+		else
+		{
+			rstr += sprintIndent(indent, tmpStr, "std::vector<%s> _%s;\n\n", type.c_str(), name.c_str());
+
+			pstr += sprintIndent(indent, tmpStr, "inline %s %s(size_t index__) const { return _%s[index__]; }\n", type.c_str(), lName.c_str(), name.c_str());
+			pstr += sprintIndent(indent, tmpStr, "inline void add%s(%s val__) { _%s.push_back(val__); }\n", uName.c_str(), type.c_str(), name.c_str());
+			pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, %s val__) { _%s[index__] = val__; }\n", uName.c_str(), type.c_str(), name.c_str());
+			pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
+		}
+	}
+	pstr += "\n";
+}
+
+std::string alterDefVal(int type, const std::string& str)
+{
+	if(!str.empty())
+		return str;
+	switch(type)
+	{
+	case TYPE_INT:
+	case TYPE_UINT:
+	case TYPE_INT64:
+	case TYPE_UINT64:
+		return "0";
+	case TYPE_FLOAT:
+		return "0.0f";
+	case TYPE_DOUBLE:
+		return "0.0";
+	case TYPE_BOOL:
+		return "false";
+	default:
+		break;
+	}
+	return "";
+}
+
+void printStruct(std::vector<StructDef *>& sd, int indent)
+{
+	const char * typeName_[] = { "int", "unsigned int", "long long", "unsigned long long", "float", "double", "std::string", "bool", "std::vector<unsigned char>", "custom" };
+
+	for(auto it = sd.begin(); it != sd.end(); ++ it)
+	{
+		std::string publicString, protectedString, constructString, destructString;
+		fprintIndent(indent, stdout, "class %s\n", (*it)->name.c_str());
+		fprintIndent(indent, stdout, "{\n");
+		if(!(*it)->structList.empty() || !(*it)->enumList.empty())
+		{
+			fprintIndent(indent, stdout, "public:\n");
+			printEnum((*it)->enumList, indent + indentSize);
+			printStruct((*it)->structList, indent + indentSize);
+		}
+		indent += indentSize;
+		bool needFlag = false;
+		int maxOrder = 0;
+		for(auto it2 = (*it)->fields.begin(); it2 != (*it)->fields.end(); ++ it2)
+		{
+			if(it2->second->constraint == 2)
+			{
+				needFlag = true;
+				it2->second->order = maxOrder ++;
+			}
+			if(it2->second->type == TYPE_CUSTOM)
+			{
+				printField(publicString, protectedString, constructString, destructString, true, it2->second->constraint, it2->second->order, it2->second->tname, it2->second->name, it2->second->defVal, indent);
+			}
+			else
+			{
+				switch(it2->second->type)
+				{
+				case TYPE_STRING:
+				case TYPE_VECTOR:
+					printField(publicString, protectedString, constructString, destructString, true, it2->second->constraint, it2->second->order, typeName_[it2->second->type], it2->second->name, it2->second->defVal, indent);
+					break;
+				default:
+					printField(publicString, protectedString, constructString, destructString, false, it2->second->constraint, it2->second->order, typeName_[it2->second->type], it2->second->name, alterDefVal(it2->second->type, it2->second->defVal), indent);
+					break;
+				}
+			}
+		}
+		indent -= indentSize;
+		fprintIndent(indent, stdout, "public:\n");
+		if(!constructString.empty() || needFlag)
+		{
+			fprintIndent(indent + indentSize, stdout, "inline %s()", (*it)->name.c_str());
+			fputs(constructString.c_str(), stdout);
+			if(needFlag)
+			{
+				fputs("\n", stdout);
+				fprintIndent(indent + indentSize, stdout, "{ memset(_isSetFlag, 0, sizeof(_isSetFlag)); }\n\n");
+			}
+			else
+				fputs(" { }\n\n", stdout);
+		}
+		if(!destructString.empty())
+		{
+			fprintIndent(indent + indentSize, stdout, "virtual ~%s()\n", (*it)->name.c_str());
+			fprintIndent(indent + indentSize, stdout, "{\n");
+			fputs(destructString.c_str(), stdout);
+			fprintIndent(indent + indentSize, stdout, "}\n\n");
+		}
+		else
+		{
+			fprintIndent(indent + indentSize, stdout, "virtual ~%s() { }\n\n", (*it)->name.c_str());
+		}
+		if(!publicString.empty())
+		{
+			fprintIndent(indent, stdout, "public:\n");
+			fputs(publicString.c_str(), stdout);
+		}
+		if(!protectedString.empty())
+		{
+			fprintIndent(indent, stdout, "protected:\n");
+			fputs(protectedString.c_str(), stdout);
+		}
+		if(needFlag)
+		{
+			fprintIndent(indent + indentSize, stdout, "unsigned int _isSetFlag[%d];\n", (maxOrder + 31) / 32);
+			fprintf(stdout, "\n");
+		}
+		fprintIndent(indent, stdout, "};\n");
+	}
+	fprintf(stdout, "\n");
+}
+
+void process(SSUStruct& ssus)
+{
+	int indent = 0;
+	printEnum(ssus.enumList, 0);
+	printStruct(ssus.structList, 0);
 }
