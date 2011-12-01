@@ -16,12 +16,14 @@ public:
 	inline operator T&() { checkObject(); return *_obj; }
 	inline ReferredObject<T>& operator=(const T& other ) { checkObject(); *_obj = other; return *this; }
 	inline T * getMutable() { return _obj; }
+
 private:
 	inline void checkObject() const
 	{
 		if(!_obj)
 			_obj = new(std::nothrow) T;
 	}
+
 private:
 	mutable T * _obj;
 };

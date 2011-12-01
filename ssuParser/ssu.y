@@ -86,8 +86,10 @@ vconstraint ::= ORDERMAP. {pss->constraint = 4;}
 vconstraint ::= . { if(pss->constraint == 0) pss->constraint = 1; }
 
 vtype ::= INTEGER. {pss->type = TYPE_INT; pss->tname = "";}
+vtype ::= SINTEGER. {pss->type = TYPE_SINT; pss->tname = "";}
 vtype ::= UINTEGER. {pss->type = TYPE_UINT; pss->tname = "";}
 vtype ::= INTEGER64. {pss->type = TYPE_INT64; pss->tname = "";}
+vtype ::= SINTEGER64. {pss->type = TYPE_SINT64; pss->tname = "";}
 vtype ::= UINTEGER64. {pss->type = TYPE_UINT64; pss->tname = "";}
 vtype ::= FLOAT. {pss->type = TYPE_FLOAT; pss->tname = "";}
 vtype ::= DOUBLE. {pss->type = TYPE_DOUBLE; pss->tname = "";}

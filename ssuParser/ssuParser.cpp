@@ -5,18 +5,24 @@
 #include <map>
 #include <string>
 #include <vector>
-
-#ifdef NDEBUG
-#define printf_debug(fmt, ...)
-#else
+/*
+#ifdef _DEBUG
+#define DEBUG_PRINTF
+#endif
+*/
+#ifdef DEBUG_PRINTF
 #define printf_debug(fmt, ...) fprintf(stdout, "[DEBUG] " fmt, ##__VA_ARGS__)
+#else
+#define printf_debug(fmt, ...)
 #endif
 
 enum FieldType
 {
 	TYPE_INT,
+	TYPE_SINT,
 	TYPE_UINT,
 	TYPE_INT64,
+	TYPE_SINT64,
 	TYPE_UINT64,
 	TYPE_FLOAT,
 	TYPE_DOUBLE,
@@ -395,10 +401,13 @@ struct TokenAssign
 	{"repeated", TK_REPEATED},
 	{"ordermap", TK_ORDERMAP},
 	{"int", TK_INTEGER},
+	{"sint", TK_SINTEGER},
 	{"uint", TK_UINTEGER},
 	{"int32", TK_INTEGER},
+	{"sint32", TK_SINTEGER},
 	{"uint32", TK_UINTEGER},
 	{"int64", TK_INTEGER64},
+	{"sint64", TK_SINTEGER64},
 	{"uint64", TK_UINTEGER64},
 	{"float", TK_FLOAT},
 	{"double", TK_DOUBLE},
