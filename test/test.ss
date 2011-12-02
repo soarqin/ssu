@@ -6,15 +6,16 @@ package game.net.data.StoC;
 // 0x01
 // 玩家注册
 message SCUserRegister_0x01 {
-  message Test
+  message StructA
   {
     required uint32 abc = 1;
   }
   // 注册结果
   // 0 - 成功  1 - 名字重复  2 - 名字含有非法字符
-  required uint32 result = 1;
+  required uint32 sa = 1;
   // 登录后用户ID
-  optional uint32 playerId = 2;
-  repeated Test tests = 3;
-  optional Test test2 = 4;
+  optional int32 sb = 2;
+  repeated StructA sc = 3;
+  optional StructA sd = 4;
+  repeated sint32 se = 5;
 }

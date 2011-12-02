@@ -76,6 +76,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Process.cpp" />
     <ClCompile Include="ssuParser.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +86,10 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)\lemon.exe T=$(SolutionDir)\lemon\lempar.c ssu.y</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ssu.out</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="Process.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
