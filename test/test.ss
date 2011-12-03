@@ -6,6 +6,12 @@ package game.net.data.StoC;
 // 0x01
 // 玩家注册
 message SCUserRegister_0x01 {
+  enum enumA
+  {
+    eA = 1;
+    eB = 2;
+    eC = 3;
+  }
   message StructA
   {
     required uint32 abc = 1;
@@ -18,4 +24,6 @@ message SCUserRegister_0x01 {
   repeated StructA sc = 3;
   optional StructA sd = 4;
   repeated sint32 se = 5;
+  required enumA sf = 6;
+  repeated enumA sg = 7;
 }

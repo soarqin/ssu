@@ -123,6 +123,21 @@ namespace ssu
 			return sizeof(double);
 		}
 
+		static inline size_t sizeBool( bool val )
+		{
+			return 1;
+		}
+
+		static inline size_t sizeString( const std::string& val )
+		{
+			return val.size();
+		}
+
+		static inline size_t sizeVector( const std::vector<unsigned char>& val )
+		{
+			return val.size();
+		}
+
 		static inline size_t sizeBinary( const void * val, size_t len )
 		{
 			return len;
@@ -211,6 +226,21 @@ namespace ssu
 			packBinary(buf, &val, sizeof(double));
 		}
 
+		static inline void packBool( std::vector<unsigned char>& buf, bool val )
+		{
+			buf.push_back(val ? 1 : 0);
+		}
+
+		static inline void packString( std::vector<unsigned char>& buf, const std::string& val )
+		{
+			buf.insert(buf.end(), val.begin(), val.end());
+		}
+
+		static inline void packVector( std::vector<unsigned char>& buf, const std::vector<unsigned char>& val )
+		{
+			buf.insert(buf.end(), val.begin(), val.end());
+		}
+
 		static inline void packBinary( std::vector<unsigned char>& buf, const void * val, size_t len )
 		{
 			const unsigned char * pbuf = reinterpret_cast<const unsigned char *>(val);
@@ -249,46 +279,66 @@ namespace ssu
 			packInt32(buf, val);
 		}
 
-		static inline void packSInt32Tag( std::vector<unsigned char>& buf, unsigned int id,  int val )
+		static inline void packSInt32Tag( std::vector<unsigned char>& buf, unsigned int id, int val )
 		{
 			packTag(buf, id, 0);
 			packSInt32(buf, val);
 		}
 
-		static inline void packUInt32Tag( std::vector<unsigned char>& buf, unsigned int id,  unsigned int val )
+		static inline void packUInt32Tag( std::vector<unsigned char>& buf, unsigned int id, unsigned int val )
 		{
 			packTag(buf, id, 0);
 			packUInt32(buf, val);
 		}
 
-		static inline void packInt64Tag( std::vector<unsigned char>& buf, unsigned int id,  long long val )
+		static inline void packInt64Tag( std::vector<unsigned char>& buf, unsigned int id, long long val )
 		{
 			packTag(buf, id, 0);
 			packInt64(buf, val);
 		}
 
-		static inline void packSInt64Tag( std::vector<unsigned char>& buf, unsigned int id,  long long val )
+		static inline void packSInt64Tag( std::vector<unsigned char>& buf, unsigned int id, long long val )
 		{
 			packTag(buf, id, 0);
 			packSInt64(buf, val);
 		}
 
-		static inline void packUInt64Tag( std::vector<unsigned char>& buf, unsigned int id,  unsigned long long val )
+		static inline void packUInt64Tag( std::vector<unsigned char>& buf, unsigned int id, unsigned long long val )
 		{
 			packTag(buf, id, 0);
 			packUInt64(buf, val);
 		}
 
-		static inline void packFloatTag( std::vector<unsigned char>& buf, unsigned int id,  float val )
+		static inline void packFloatTag( std::vector<unsigned char>& buf, unsigned int id, float val )
 		{
 			packTag(buf, id, 5);
 			packFloat(buf, val);
 		}
 
-		static inline void packDoubleTag( std::vector<unsigned char>& buf, unsigned int id,  double val )
+		static inline void packDoubleTag( std::vector<unsigned char>& buf, unsigned int id, double val )
 		{
 			packTag(buf, id, 1);
 			packDouble(buf, val);
+		}
+
+		static inline void packBoolTag( std::vector<unsigned char>& buf, unsigned int id, bool val )
+		{
+			packTag(buf, id, 0);
+			packBool(buf, val);
+		}
+
+		static inline void packStringTag( std::vector<unsigned char>& buf, unsigned int id, const std::string& val )
+		{
+			packTag(buf, id, 2);
+			packUInt32(buf, val.size());
+			packString(buf, val);
+		}
+
+		static inline void packVectorTag( std::vector<unsigned char>& buf, unsigned int id, const std::vector<unsigned char>& val )
+		{
+			packTag(buf, id, 2);
+			packUInt32(buf, val.size());
+			packVector(buf, val);
 		}
 
 		static inline void packBinaryTag( std::vector<unsigned char>& buf, unsigned int id,  const void * val, size_t len )
@@ -301,7 +351,7 @@ namespace ssu
 		template<typename T>
 		static inline void packObjectTag( std::vector<unsigned char>& buf, unsigned int id, T * val)
 		{
-			packTag(buf, id, 0);
+			packTag(buf, id, 2);
 			packUInt32(buf, static_cast<unsigned int>(val->size()));
 			packObject(buf, val);
 		}

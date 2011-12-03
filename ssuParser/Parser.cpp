@@ -180,16 +180,32 @@ static void appendField(SSUStruct * st)
 		fprintf(stderr, "Repeated field name %s!\n", st->name);
 		exit(0);
 	}
-	if(st->type == TYPE_CUSTOM)
+	if(st->type == TYPE_STRUCT)
 	{
 		bool found = false;
 		if(st->currentStruct != NULL)
-			found = st->currentStruct->structs.find(st->tname) != st->currentStruct->structs.end() || st->currentStruct->enums.find(st->tname) != st->currentStruct->enums.end();
-		if(!found)
-			found = st->structs.find(st->tname) != st->structs.end() || st->enums.find(st->tname) != st->enums.end();
+		{
+			if(st->currentStruct->structs.find(st->tname) != st->currentStruct->structs.end())
+				found = true;
+			else if(st->currentStruct->enums.find(st->tname) != st->currentStruct->enums.end())
+			{
+				st->type = TYPE_ENUM;
+				found = true;
+			}
+		}
 		if(!found)
 		{
-			fprintf(stderr, "Wrong custom field type %s!\n", st->tname);
+			if(st->structs.find(st->tname) != st->structs.end())
+				found = true;
+			else if(st->enums.find(st->tname) != st->enums.end())
+			{
+				st->type = TYPE_ENUM;
+				found = true;
+			}
+		}
+		if(!found)
+		{
+			fprintf(stderr, "Wrong field type %s!\n", st->tname);
 			exit(0);
 		}
 	}

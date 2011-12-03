@@ -60,9 +60,10 @@ void printEnum(FILE * outputFile, std::vector<EnumDef *>& ed, int indent)
 		indent += indentSize;
 		for(auto it2 = (*it)->vals.begin(); it2 != (*it)->vals.end(); ++ it2)
 		{
-			fprintIndent(indent, outputFile, "%s = %d,\n", it2->second->name, it2->second->val);
+			fprintIndent(indent, outputFile, "%s = %d,\n", it2->second->name.c_str(), it2->second->val);
 		}
 		indent -= indentSize;
+		fprintIndent(indent, outputFile, "};\n\n");
 	}
 }
 
@@ -87,21 +88,21 @@ inline size_t sizeUInt32( unsigned int val )
 
 void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::string& cstr, std::string& dstr, std::string& pkstr, std::string& upkstr, std::string& sstr, int constraint, int oorder, int order, int typeId, const std::string& tname, const std::string& name, const std::string& defVal, int indent)
 {
-	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "std::string", "bool", "std::vector<unsigned char>", "custom" };
-	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Vector", "Referred" };
+	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "std::string", "bool", "std::vector<unsigned char>", "enum", "struct" };
+	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Vector", "UInt32", "Referred" };
 	char tmpStr[1024];
 
 	std::string lName = capitalize(name);
 	std::string uName = capitalize(name, true);
 	const char * type;
-	if(typeId == TYPE_CUSTOM)
+	if(typeId == TYPE_ENUM || typeId == TYPE_STRUCT)
 		type = tname.c_str();
 	else
 		type = typeName_[typeId];
 	const char * funcName = funcName_[typeId];
 	if(constraint == 1 || constraint == 2)
 	{
-		bool useRef = typeId == TYPE_CUSTOM || typeId == TYPE_STRING || typeId == TYPE_VECTOR;
+		bool useRef = typeId == TYPE_STRUCT || typeId == TYPE_STRING || typeId == TYPE_VECTOR;
 		if(useRef)
 		{
 			rstr += sprintIndent(indent, tmpStr, "ssu::ReferredObject<%s> _%s;\n\n", type, name.c_str());
@@ -156,7 +157,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 	}
 	else
 	{
-		bool useRef = typeId == TYPE_CUSTOM;
+		bool useRef = typeId == TYPE_STRUCT;
 		if(useRef)
 		{
 			rstr += sprintIndent(indent, tmpStr, "std::vector<%s *> _%s;\n\n", type, name.c_str());
