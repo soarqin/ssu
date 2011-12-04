@@ -6,5 +6,6 @@
   <ItemGroup>
     <ClInclude Include="ReferredObject.h" />
     <ClInclude Include="SsuObject.h" />
+    <ClInclude Include="SsuUtils.h" />
   </ItemGroup>
 </Project>

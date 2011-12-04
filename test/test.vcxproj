@@ -56,6 +56,8 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference />
+    <ProjectReference />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -82,6 +84,11 @@
     <None Include="test.protobuf.inc" />
     <None Include="test.ss" />
     <None Include="test.ssu.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\protobuf\protobuf.vcxproj">
+      <Project>{eeae54c3-b122-4a3b-be91-ec89f7353514}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

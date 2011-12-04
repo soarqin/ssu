@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="ReferredObject.h" />
     <ClInclude Include="SsuObject.h" />
+    <ClInclude Include="SsuUtils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}</ProjectGuid>
