@@ -10,6 +10,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ssuParser", "ssuParser\ssuP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libssu", "libssu\libssu.vcxproj", "{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "protobuf", "protobuf\protobuf.vcxproj", "{EEAE54C3-B122-4A3B-BE91-EC89F7353514}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{357B34EA-692E-4FE5-B275-971EA084D2CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -28,6 +32,14 @@ Global
 		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Debug|Win32.Build.0 = Debug|Win32
 		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Release|Win32.ActiveCfg = Release|Win32
 		{7CFFE117-5622-4F25-8EAD-8843F95BB4E9}.Release|Win32.Build.0 = Release|Win32
+		{EEAE54C3-B122-4A3B-BE91-EC89F7353514}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EEAE54C3-B122-4A3B-BE91-EC89F7353514}.Debug|Win32.Build.0 = Debug|Win32
+		{EEAE54C3-B122-4A3B-BE91-EC89F7353514}.Release|Win32.ActiveCfg = Release|Win32
+		{EEAE54C3-B122-4A3B-BE91-EC89F7353514}.Release|Win32.Build.0 = Release|Win32
+		{357B34EA-692E-4FE5-B275-971EA084D2CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{357B34EA-692E-4FE5-B275-971EA084D2CA}.Debug|Win32.Build.0 = Debug|Win32
+		{357B34EA-692E-4FE5-B275-971EA084D2CA}.Release|Win32.ActiveCfg = Release|Win32
+		{357B34EA-692E-4FE5-B275-971EA084D2CA}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
