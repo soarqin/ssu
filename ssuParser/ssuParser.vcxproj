@@ -85,6 +85,8 @@
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)\lemon.exe T=$(SolutionDir)\lemon\lempar.c ssu.y</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ssu.out</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)\lemon.exe T=$(SolutionDir)\lemon\lempar.c ssu.y</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ssu.out</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

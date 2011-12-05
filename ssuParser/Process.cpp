@@ -104,11 +104,11 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 	{
 		if(typeId == TYPE_STRUCT)
 		{
-			rstr += sprintIndent(indent, tmpStr, "::ssu::ReferredObject<%s> _%s;\n\n", type, name.c_str());
+			rstr += sprintIndent(indent, tmpStr, "::ssu::ReferredObject<%s> _%s;\n", type, name.c_str());
 		}
 		else
 		{
-			rstr += sprintIndent(indent, tmpStr, "%s _%s;\n\n", type, name.c_str());
+			rstr += sprintIndent(indent, tmpStr, "%s _%s;\n", type, name.c_str());
 		}
 		pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::pack%sTag(buf, %d, _%s);\n", funcName, oorder, name.c_str());
 		if(!sstr.empty())
@@ -170,7 +170,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 		{
 		case 2:
 			{
-				rstr += sprintIndent(indent, tmpStr, "std::vector<%s> _%s;\n\n", type, name.c_str());
+				rstr += sprintIndent(indent, tmpStr, "std::vector<%s> _%s;\n", type, name.c_str());
 
 				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s(size_t index__) const { return _%s[index__]; }\n", type, lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void add%s(const %s& val__) { _%s.push_back(val__); }\n", uName.c_str(), type, name.c_str());
@@ -197,7 +197,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			break;
 		case 1:
 			{
-				rstr += sprintIndent(indent, tmpStr, "std::vector<%s *> _%s;\n\n", type, name.c_str());
+				rstr += sprintIndent(indent, tmpStr, "std::vector<%s *> _%s;\n", type, name.c_str());
 
 				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s(size_t index__) const { return *_%s[index__]; }\n", type, lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline %s * add%s() { %s * val__ = new(std::nothrow) %s; if(val__ == NULL) return NULL; _%s.push_back(val__); return val__; }\n", type, uName.c_str(), type, type, name.c_str());
@@ -214,7 +214,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			break;
 		case 0:
 			{
-				rstr += sprintIndent(indent, tmpStr, "std::vector<%s> _%s;\n\n", type, name.c_str());
+				rstr += sprintIndent(indent, tmpStr, "std::vector<%s> _%s;\n", type, name.c_str());
 
 				pstr += sprintIndent(indent, tmpStr, "inline %s %s(size_t index__) const { return _%s[index__]; }\n", type, lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void add%s(%s val__) { _%s.push_back(val__); }\n", uName.c_str(), type, name.c_str());
@@ -260,7 +260,6 @@ void printStruct(FILE * outputFile, std::vector<StructDef *>& sd, int indent)
 {
 	for(auto it = sd.begin(); it != sd.end(); ++ it)
 	{
-		fprintf(outputFile, "\n");
 		std::string publicString, protectedString, constructString, destructString, packString, unpackString, sizeString;
 		fprintIndent(indent, outputFile, "class %s: public ::ssu::Object\n", (*it)->name.c_str());
 		fprintIndent(indent, outputFile, "{\n");
@@ -335,10 +334,11 @@ void printStruct(FILE * outputFile, std::vector<StructDef *>& sd, int indent)
 		}
 		if(needFlag)
 		{
-			fprintIndent(indent + indentSize, outputFile, "unsigned int _isSetFlag[%d];\n", (maxOrder + 31) / 32);
 			fprintf(outputFile, "\n");
+			fprintIndent(indent + indentSize, outputFile, "unsigned int _isSetFlag[%d];\n", (maxOrder + 31) / 32);
 		}
-		fprintIndent(indent, outputFile, "};\n");
+		fprintf(outputFile, "\n");
+		fprintIndent(indent, outputFile, "};\n\n");
 	}
 }
 
