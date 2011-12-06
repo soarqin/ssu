@@ -83,7 +83,6 @@
   <ItemGroup>
     <None Include="test.protobuf.inc" />
     <None Include="test.ss" />
-    <None Include="test.ssu.inc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\protobuf\protobuf.vcxproj">

@@ -3,6 +3,6 @@
 
 #include "Parser.h"
 
-void process(FILE *, SSUStruct&);
+void process(FILE *, FILE *, SSUStruct&);
 
 #endif // _PROCESS_H_

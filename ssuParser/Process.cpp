@@ -273,18 +273,18 @@ std::string alterDefVal(int type, const std::string& str)
 	return "";
 }
 
-void printStruct(FILE * outputFile, std::vector<StructDef *>& sd, int indent)
+void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFileH, std::vector<StructDef *>& sd, int indent)
 {
 	for(auto it = sd.begin(); it != sd.end(); ++ it)
 	{
 		std::string publicString, protectedString, constructString, destructString, packString, unpackString, sizeString;
-		fprintIndent(indent, outputFile, "class %s: public ::ssu::Object\n", (*it)->name.c_str());
-		fprintIndent(indent, outputFile, "{\n");
+		fprintIndent(indent, outputFileH, "class %s: public ::ssu::Object\n", (*it)->name.c_str());
+		fprintIndent(indent, outputFileH, "{\n");
 		if(!(*it)->structList.empty() || !(*it)->enumList.empty())
 		{
-			fprintIndent(indent, outputFile, "public:\n");
-			printEnum(outputFile, (*it)->enumList, indent + indentSize);
-			printStruct(outputFile, (*it)->structList, indent + indentSize);
+			fprintIndent(indent, outputFileH, "public:\n");
+			printEnum(outputFileH, (*it)->enumList, indent + indentSize);
+			printStruct(parent + (*it)->name + "::", outputFileC, outputFileH, (*it)->structList, indent + indentSize);
 		}
 		indent += indentSize;
 		bool needFlag = false;
@@ -297,82 +297,86 @@ void printStruct(FILE * outputFile, std::vector<StructDef *>& sd, int indent)
 				needFlag = true;
 				it2->second->order = maxOrder ++;
 			}
-			printField(outputFile, publicString, protectedString, constructString, destructString, packString, unpackString, sizeString, it2->second->constraint, oldOrder, it2->second->order, it2->second->type, it2->second->tname, it2->second->name, alterDefVal(it2->second->type, it2->second->defVal), indent);
+			printField(outputFileH, publicString, protectedString, constructString, destructString, packString, unpackString, sizeString, it2->second->constraint, oldOrder, it2->second->order, it2->second->type, it2->second->tname, it2->second->name, alterDefVal(it2->second->type, it2->second->defVal), indent);
 		}
 		indent -= indentSize;
-		fprintIndent(indent, outputFile, "public:\n");
+		fprintIndent(indent, outputFileH, "public:\n");
 		if(!constructString.empty() || needFlag)
 		{
-			fprintIndent(indent + indentSize, outputFile, "inline %s()", (*it)->name.c_str());
-			fputs(constructString.c_str(), outputFile);
+			fprintIndent(indent + indentSize, outputFileH, "inline %s()", (*it)->name.c_str());
+			fputs(constructString.c_str(), outputFileH);
 			if(needFlag)
 			{
-				fputs("\n", outputFile);
-				fprintIndent(indent + indentSize, outputFile, "{ memset(_isSetFlag, 0, sizeof(_isSetFlag)); }\n\n");
+				fputs("\n", outputFileH);
+				fprintIndent(indent + indentSize, outputFileH, "{ memset(_isSetFlag, 0, sizeof(_isSetFlag)); }\n\n");
 			}
 			else
-				fputs(" { }\n\n", outputFile);
+				fputs(" { }\n\n", outputFileH);
 		}
 		if(!destructString.empty())
 		{
-			fprintIndent(indent + indentSize, outputFile, "virtual ~%s()\n", (*it)->name.c_str());
-			fprintIndent(indent + indentSize, outputFile, "{\n");
-			fputs(destructString.c_str(), outputFile);
-			fprintIndent(indent + indentSize, outputFile, "}\n\n");
+			fprintIndent(indent + indentSize, outputFileH, "virtual ~%s()\n", (*it)->name.c_str());
+			fprintIndent(indent + indentSize, outputFileH, "{\n");
+			fputs(destructString.c_str(), outputFileH);
+			fprintIndent(indent + indentSize, outputFileH, "}\n\n");
 		}
 		else
 		{
-			fprintIndent(indent + indentSize, outputFile, "virtual ~%s() { }\n\n", (*it)->name.c_str());
+			fprintIndent(indent + indentSize, outputFileH, "virtual ~%s() { }\n\n", (*it)->name.c_str());
 		}
-		fprintIndent(indent, outputFile, "public:\n");
-		fprintIndent(indent + indentSize, outputFile, "virtual unsigned char * packBuffer(unsigned char * buf)\n");
-		fprintIndent(indent + indentSize, outputFile, "{\n");
-		fputs(packString.c_str(), outputFile);
-		fprintIndent(indent + indentSize * 2, outputFile, "return buf;\n");
-		fprintIndent(indent + indentSize, outputFile, "}\n\n");
-		fprintIndent(indent, outputFile, "public:\n");
-		fprintIndent(indent + indentSize, outputFile, "virtual bool unpackBuffer(const unsigned char *& buf, size_t& leftSize)\n");
-		fprintIndent(indent + indentSize, outputFile, "{\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "unsigned int tag_; unsigned char type_;\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "while(leftSize > 0)\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "{\n");
-		fprintIndent(indent + indentSize * 3, outputFile, "if(!::ssu::Utils::unpackTag(buf, leftSize, tag_, type_)) return false;\n");
-		fprintIndent(indent + indentSize * 3, outputFile, "switch(tag_)\n");
-		fprintIndent(indent + indentSize * 3, outputFile, "{\n");
-		fputs(unpackString.c_str(), outputFile);
-		fprintIndent(indent + indentSize * 3, outputFile, "default: break;\n");
-		fprintIndent(indent + indentSize * 3, outputFile, "}\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "}\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "return true;\n");
-		fprintIndent(indent + indentSize, outputFile, "}\n\n");
-		fprintIndent(indent + indentSize, outputFile, "virtual size_t size()\n");
-		fprintIndent(indent + indentSize, outputFile, "{\n");
-		fprintIndent(indent + indentSize * 2, outputFile, "return %s;\n", sizeString.c_str());
-		fprintIndent(indent + indentSize, outputFile, "}\n\n");
+		fprintIndent(indent, outputFileH, "public:\n");
+		fprintIndent(indent + indentSize, outputFileH, "virtual unsigned char * packBuffer(unsigned char * buf);\n");
+		fprintIndent(indent + indentSize, outputFileH, "virtual bool unpackBuffer(const unsigned char *& buf, size_t& leftSize);\n");
+		fprintIndent(indent + indentSize, outputFileH, "virtual size_t size();\n");
 		if(!publicString.empty())
 		{
-			fprintIndent(indent, outputFile, "public:\n");
-			fputs(publicString.c_str(), outputFile);
+			fprintIndent(indent, outputFileH, "public:\n");
+			fputs(publicString.c_str(), outputFileH);
 		}
 		if(!protectedString.empty())
 		{
-			fprintIndent(indent, outputFile, "protected:\n");
-			fputs(protectedString.c_str(), outputFile);
+			fprintIndent(indent, outputFileH, "protected:\n");
+			fputs(protectedString.c_str(), outputFileH);
 		}
 		if(needFlag)
 		{
-			fprintf(outputFile, "\n");
-			fprintIndent(indent + indentSize, outputFile, "unsigned int _isSetFlag[%d];\n", (maxOrder + 31) / 32);
+			fprintf(outputFileH, "\n");
+			fprintIndent(indent + indentSize, outputFileH, "unsigned int _isSetFlag[%d];\n", (maxOrder + 31) / 32);
 		}
-		fprintf(outputFile, "\n");
-		fprintIndent(indent, outputFile, "};\n\n");
+		fprintf(outputFileH, "\n");
+		fprintIndent(indent, outputFileH, "};\n\n");
+
+		fprintIndent(0, outputFileC, "unsigned char * %s%s::packBuffer(unsigned char * buf)\n", parent.c_str(), (*it)->name.c_str());
+		fprintIndent(0, outputFileC, "{\n");
+		fputs(packString.c_str(), outputFileC);
+		fprintIndent(indentSize, outputFileC, "return buf;\n");
+		fprintIndent(0, outputFileC, "}\n\n");
+		fprintIndent(0, outputFileC, "bool %s%s::unpackBuffer(const unsigned char *& buf, size_t& leftSize)\n", parent.c_str(), (*it)->name.c_str());
+		fprintIndent(0, outputFileC, "{\n");
+		fprintIndent(indentSize, outputFileC, "unsigned int tag_; unsigned char type_;\n");
+		fprintIndent(indentSize, outputFileC, "while(leftSize > 0)\n");
+		fprintIndent(indentSize, outputFileC, "{\n");
+		fprintIndent(indentSize * 2, outputFileC, "if(!::ssu::Utils::unpackTag(buf, leftSize, tag_, type_)) return false;\n");
+		fprintIndent(indentSize * 2, outputFileC, "switch(tag_)\n");
+		fprintIndent(indentSize * 2, outputFileC, "{\n");
+		fputs(unpackString.c_str(), outputFileC);
+		fprintIndent(indentSize * 2, outputFileC, "default: break;\n");
+		fprintIndent(indentSize * 2, outputFileC, "}\n");
+		fprintIndent(indentSize, outputFileC, "}\n");
+		fprintIndent(indentSize, outputFileC, "return true;\n");
+		fprintIndent(0, outputFileC, "}\n\n");
+		fprintIndent(0, outputFileC, "size_t %s%s::size()\n", parent.c_str(), (*it)->name.c_str());
+		fprintIndent(0, outputFileC, "{\n");
+		fprintIndent(indentSize, outputFileC, "return %s;\n", sizeString.c_str());
+		fprintIndent(0, outputFileC, "}\n\n");
+
 	}
 }
 
-void process(FILE * outputFile, SSUStruct& ssus)
+void process(FILE * outputFileC, FILE * outputFileH, SSUStruct& ssus)
 {
 	int indent = 0;
-	fprintf(outputFile, "#include \"SsuObject.h\"\n\n");
-	printEnum(outputFile, ssus.enumList, 0);
-	printStruct(outputFile, ssus.structList, 0);
+	fprintf(outputFileH, "#include \"SsuObject.h\"\n\n");
+	printEnum(outputFileH, ssus.enumList, 0);
+	printStruct("", outputFileC, outputFileH, ssus.structList, 0);
 }

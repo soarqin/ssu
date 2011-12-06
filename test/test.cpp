@@ -3,7 +3,7 @@
 #include "SsuObject.h"
 namespace ssutest
 {
-#include "test.ssu.inc"
+#include "test.ssu.cpp"
 }
 
 template<typename T>
