@@ -21,6 +21,12 @@ namespace ssu
 			return sizeUInt32(zzEncode32(val));
 		}
 
+		template<typename T>
+		static inline size_t sizeEnum( T val )
+		{
+			return sizeUInt32(static_cast<unsigned int>(val));
+		}
+
 		static inline size_t sizeUInt32( unsigned int val )
 		{
 			if(val < (1 << 14))
@@ -166,6 +172,12 @@ namespace ssu
 			return packUInt32(buf, zzEncode32(val));
 		}
 
+		template<typename T>
+		static inline unsigned char * packEnum( unsigned char * buf, T val )
+		{
+			return packUInt32(buf, static_cast<unsigned int>(val));
+		}
+
 		static inline unsigned char * packUInt32( unsigned char * buf, unsigned int val )
 		{
 			while(val >= 128)
@@ -279,6 +291,13 @@ namespace ssu
 			return packUInt32(buf, val);
 		}
 
+		template<typename T>
+		static inline unsigned char * packEnumTag( unsigned char * buf, unsigned int id, T val )
+		{
+			buf = packTag(buf, id, 0);
+			return packEnum(buf, val);
+		}
+
 		static inline unsigned char * packInt64Tag( unsigned char * buf, unsigned int id, long long val )
 		{
 			buf = packTag(buf, id, 0);
@@ -358,6 +377,220 @@ namespace ssu
 				buf = func(buf, id, *iter);
 			}
 			return buf;
+		}
+
+		static inline bool unpackInt32( const unsigned char *& buf, size_t& leftSize, int& val )
+		{
+			unsigned long long n = 0;
+			if(!unpackUInt64(buf, leftSize, n))
+				return false;
+			val = static_cast<int>(n);
+			return true;
+		}
+
+		static inline bool unpackSInt32( const unsigned char *& buf, size_t& leftSize, int& val )
+		{
+			unsigned int n = 0;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			val = zzDecode32(n);
+			return true;
+		}
+
+		template<typename T>
+		static inline bool unpackEnum( const unsigned char *& buf, size_t& leftSize, T& val )
+		{
+			unsigned int n = 0;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			val = static_cast<T>(n);
+			return true;
+		}
+
+		static inline bool unpackUInt32( const unsigned char *& buf, size_t& leftSize, unsigned int& val )
+		{
+			if(leftSize == 0)
+				return false;
+			val = (*buf) & 0x7F;
+			unsigned int shiftn = 7;
+			while((*buf) >= 128)
+			{
+				if((-- leftSize) == 0)
+				{
+					++ buf;
+					return false;
+				}
+				val += static_cast<unsigned int>((*(++buf)) & 0x7F) << shiftn;
+				shiftn += 7;
+			}
+			-- leftSize;
+			++ buf;
+			return true;
+		}
+
+		static inline bool unpackInt64( const unsigned char *& buf, size_t& leftSize, long long& val )
+		{
+			return unpackUInt64(buf, leftSize, reinterpret_cast<unsigned long long&>(val));
+		}
+
+		static inline bool unpackSInt64( const unsigned char *& buf, size_t& leftSize, long long& val )
+		{
+			unsigned long long n;
+			if(!unpackUInt64(buf, leftSize, n))
+				return false;
+			val = zzDecode64(n);
+			return true;
+		}
+
+		static inline bool unpackUInt64( const unsigned char *& buf, size_t& leftSize, unsigned long long& val )
+		{
+			if(leftSize == 0)
+				return false;
+			val = (*buf) & 0x7F;
+			-- leftSize;
+			unsigned int shiftn = 7;
+			while((*buf) >= 128)
+			{
+				if((-- leftSize) == 0)
+				{
+					++ buf;
+					return false;
+				}
+				val += static_cast<unsigned long long>((*(++buf)) & 0x7F) << shiftn;
+				shiftn += 7;
+			}
+			-- leftSize;
+			++ buf;
+			return true;
+		}
+
+		static inline bool unpackFloat( const unsigned char *& buf, size_t& leftSize, float& val )
+		{
+			return unpackBinary(buf, leftSize, &val, sizeof(float));
+		}
+
+		static inline bool unpackDouble( const unsigned char *& buf, size_t& leftSize, double& val )
+		{
+			return unpackBinary(buf, leftSize, &val, sizeof(double));
+		}
+
+		static inline bool unpackBool( const unsigned char *& buf, size_t& leftSize, bool& val )
+		{
+			if(leftSize == 0)
+				return false;
+			val = (*buf++) != 0;
+			return true;
+		}
+
+		static inline bool unpackString( const unsigned char *& buf, size_t& leftSize, std::string& val )
+		{
+			unsigned int length;
+			if(!unpackUInt32(buf, leftSize, length))
+				return false;
+			if(length > leftSize)
+				length = leftSize;
+			val.resize(length);
+			if(length > 0)
+				memcpy(&val[0], buf, length);
+			leftSize -= length;
+			buf += length;
+			return true;
+		}
+
+		static inline bool unpackVector( const unsigned char *& buf, size_t& leftSize, std::vector<unsigned char>& val )
+		{
+			unsigned int length = 0;
+			if(!unpackUInt32(buf, leftSize, length))
+				return false;
+			if(length > leftSize)
+				length = leftSize;
+			val.resize(length);
+			if(length > 0)
+				memcpy(&val[0], buf, length);
+			leftSize -= length;
+			buf += length;
+			return true;
+		}
+
+		static inline bool unpackBinary( const unsigned char *& buf, size_t& leftSize, void * val, size_t len )
+		{
+			if(len > leftSize)
+				return false;
+			if(len > 0)
+				memcpy(val, buf, len);
+			leftSize -= len;
+			buf += len;
+			return true;
+		}
+
+		template<typename T>
+		static inline bool unpackObject(const unsigned char *& buf, size_t& leftSize, T * val)
+		{
+			unsigned int n;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			const unsigned char * thisbuf = buf;
+			if(!val->unpackBuffer(thisbuf, n))
+				return false;
+			buf += n;
+			leftSize -= n;
+			return true;
+		}
+
+		template<typename T>
+		static inline bool unpackObjectPtr(const unsigned char *& buf, size_t& leftSize, T *& val)
+		{
+			val = new(std::nothrow) T;
+			if(val == NULL) return false;
+
+			if(!val->unpackBuffer(buf, leftSize))
+			{
+				delete val;
+				return false;
+			}
+			return true;
+		}
+
+		template<typename T>
+		static inline bool unpackReferred(const unsigned char *& buf, size_t& leftSize, ReferredObject<T>& val)
+		{
+			return unpackObject(buf, leftSize, val.getMutable());
+		}
+
+		template<typename T, typename F>
+		static inline bool unpackRepeated(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		{
+			T singleVal;
+			if(!func(buf, leftSize, singleVal))
+				return false;
+			val.push_back(singleVal);
+			return true;
+		}
+
+		template<typename T, typename F>
+		static inline bool unpackRepeatedPtr(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		{
+			unsigned int n;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			const unsigned char * thisbuf = buf;
+			T singleVal;
+			if(!func(thisbuf, n, singleVal))
+				return false;
+			val.push_back(singleVal);
+			buf += n;
+			leftSize -= n;
+			return true;
+		}
+
+		static inline bool unpackTag(const unsigned char *& buf, size_t& leftSize, unsigned int& tag, unsigned char& type)
+		{
+			unsigned int n;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			tag = n >> 3;
+			type = n & 7;
+			return true;
 		}
 
 	private:

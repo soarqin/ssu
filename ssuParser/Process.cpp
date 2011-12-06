@@ -89,7 +89,8 @@ inline size_t sizeUInt32( unsigned int val )
 void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::string& cstr, std::string& dstr, std::string& pkstr, std::string& upkstr, std::string& sstr, int constraint, int oorder, int order, int typeId, const std::string& tname, const std::string& name, const std::string& defVal, int indent)
 {
 	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "std::string", "bool", "std::vector<unsigned char>", "enum", "struct" };
-	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Vector", "UInt32", "Referred" };
+	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Vector", "Enum", "Referred" };
+	int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 2, 0, 2, 0, 2};
 	char tmpStr[1024];
 
 	std::string lName = capitalize(name);
@@ -100,6 +101,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 	else
 		type = typeName_[typeId];
 	const char * funcName = funcName_[typeId];
+	upkstr += sprintIndent(indent + indentSize * 2, tmpStr, "case %d:\n", oorder);
 	if(constraint == 1 || constraint == 2)
 	{
 		if(typeId == TYPE_STRUCT)
@@ -111,6 +113,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			rstr += sprintIndent(indent, tmpStr, "%s _%s;\n", type, name.c_str());
 		}
 		pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::pack%sTag(buf, %d, _%s);\n", funcName, oorder, name.c_str());
+		upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpack%s(buf, leftSize, _%s)) return false;\n", typeInt_[typeId], funcName, name.c_str());
 		if(!sstr.empty())
 			sstr += " + ";
 		sprintf(tmpStr, "%u + ::ssu::Utils::size%s(_%s)", sizeUInt32(oorder << 3), funcName, name.c_str());
@@ -189,6 +192,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
 
 				pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::packRepeatedTag(buf, %d, _%s, ::ssu::Utils::pack%sTag);\n", oorder, name.c_str(), funcName);
+				upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpackRepeated(buf, leftSize, _%s, ::ssu::Utils::unpack%s)) return false;\n", typeInt_[typeId], name.c_str(), funcName);
 				if(!sstr.empty())
 					sstr += " + ";
 				sprintf(tmpStr, "%u * _%s.size() + ::ssu::Utils::sizeRepeated(_%s, ::ssu::Utils::size%s)", sizeUInt32(oorder << 3), name.c_str(), name.c_str(), funcName);
@@ -206,6 +210,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				dstr += sprintIndent(indent + indentSize, tmpStr, "for(std::vector<%s *>::iterator iter = _%s.begin(); iter != _%s.end(); ++ iter) { delete *iter; }\n", type, name.c_str(), name.c_str());
 
 				pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::packRepeatedTag(buf, %d, _%s, ::ssu::Utils::packObjectTag<%s>);\n", oorder, name.c_str(), type);
+				upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpackRepeatedPtr(buf, leftSize, _%s, ::ssu::Utils::unpackObjectPtr<%s>)) return false;\n", typeInt_[typeId], name.c_str(), type);
 				if(!sstr.empty())
 					sstr += " + ";
 				sprintf(tmpStr, "%u * _%s.size() + ::ssu::Utils::sizeRepeated(_%s, ::ssu::Utils::sizeObject<%s>)", sizeUInt32(oorder << 3), name.c_str(), name.c_str(), type);
@@ -221,15 +226,27 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, %s val__) { _%s[index__] = val__; }\n", uName.c_str(), type, name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
 
-				pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::packRepeatedTag(buf, %d, _%s, ::ssu::Utils::pack%sTag);\n", oorder, name.c_str(), funcName);
 				if(!sstr.empty())
 					sstr += " + ";
-				sprintf(tmpStr, "%u * _%s.size() + ::ssu::Utils::sizeRepeated(_%s, ::ssu::Utils::size%s)", sizeUInt32(oorder << 3), name.c_str(), name.c_str(), funcName);
-				sstr += tmpStr;
+				if(typeId == TYPE_ENUM)
+				{
+					pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::packRepeatedTag(buf, %d, _%s, ::ssu::Utils::packEnumTag<%s>);\n", oorder, name.c_str(), type);
+					upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpackRepeated(buf, leftSize, _%s, ::ssu::Utils::unpackEnum<%s>)) return false;\n", typeInt_[typeId], name.c_str(), type);
+					sprintf(tmpStr, "%u * _%s.size() + ::ssu::Utils::sizeRepeated(_%s, ::ssu::Utils::sizeEnum<%s>)", sizeUInt32(oorder << 3), name.c_str(), name.c_str(), type);
+					sstr += tmpStr;
+				}
+				else
+				{
+					pkstr += sprintIndent(indent + indentSize, tmpStr, "buf = ::ssu::Utils::packRepeatedTag(buf, %d, _%s, ::ssu::Utils::pack%sTag);\n", oorder, name.c_str(), funcName);
+					upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpackRepeated(buf, leftSize, _%s, ::ssu::Utils::unpack%s)) return false;\n", typeInt_[typeId], name.c_str(), funcName);
+					sprintf(tmpStr, "%u * _%s.size() + ::ssu::Utils::sizeRepeated(_%s, ::ssu::Utils::size%s)", sizeUInt32(oorder << 3), name.c_str(), name.c_str(), funcName);
+					sstr += tmpStr;
+				}
 			}
 			break;
 		}
 	}
+	upkstr += sprintIndent(indent + indentSize * 3, tmpStr, "break;\n", funcName, oorder, name.c_str());
 	pstr += "\n";
 }
 
@@ -314,9 +331,19 @@ void printStruct(FILE * outputFile, std::vector<StructDef *>& sd, int indent)
 		fprintIndent(indent + indentSize * 2, outputFile, "return buf;\n");
 		fprintIndent(indent + indentSize, outputFile, "}\n\n");
 		fprintIndent(indent, outputFile, "public:\n");
-		fprintIndent(indent + indentSize, outputFile, "virtual void unpack(const void * buffer, size_t length)\n");
+		fprintIndent(indent + indentSize, outputFile, "virtual bool unpackBuffer(const unsigned char *& buf, size_t& leftSize)\n");
 		fprintIndent(indent + indentSize, outputFile, "{\n");
+		fprintIndent(indent + indentSize * 2, outputFile, "unsigned int tag_; unsigned char type_;\n");
+		fprintIndent(indent + indentSize * 2, outputFile, "while(leftSize > 0)\n");
+		fprintIndent(indent + indentSize * 2, outputFile, "{\n");
+		fprintIndent(indent + indentSize * 3, outputFile, "if(!::ssu::Utils::unpackTag(buf, leftSize, tag_, type_)) return false;\n");
+		fprintIndent(indent + indentSize * 3, outputFile, "switch(tag_)\n");
+		fprintIndent(indent + indentSize * 3, outputFile, "{\n");
 		fputs(unpackString.c_str(), outputFile);
+		fprintIndent(indent + indentSize * 3, outputFile, "default: break;\n");
+		fprintIndent(indent + indentSize * 3, outputFile, "}\n");
+		fprintIndent(indent + indentSize * 2, outputFile, "}\n");
+		fprintIndent(indent + indentSize * 2, outputFile, "return true;\n");
 		fprintIndent(indent + indentSize, outputFile, "}\n\n");
 		fprintIndent(indent + indentSize, outputFile, "virtual size_t size()\n");
 		fprintIndent(indent + indentSize, outputFile, "{\n");

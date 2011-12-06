@@ -58,6 +58,10 @@ int main(int, char * argv[])
 			printf(" %02X", (unsigned char)*it);
 		}
 		printf("\n");
+
+		ssutest::StructTest st3;
+		st3.unpack(&buf[0], buf.size());
+		printf("end\n");
 	}
 // 	printf("elapsed: %ums\n", GetTickCount() - ts);
 	return 0;

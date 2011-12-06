@@ -30,9 +30,14 @@ namespace ssu
 				packBuffer(reinterpret_cast<unsigned char *>(&buf[sz]));
 			}
 		}
-		virtual void unpack(const void * buffer, size_t length) = 0;
+		virtual void unpack(const void * buffer, size_t length)
+		{
+			const unsigned char * buf = reinterpret_cast<const unsigned char *>(buffer);
+			unpackBuffer(buf, length);
+		}
 		virtual size_t size() = 0;
 		virtual unsigned char * packBuffer(unsigned char * buf) = 0;
+		virtual bool unpackBuffer(const unsigned char *& buf, size_t& leftSize) = 0;
 	};
 
 }
