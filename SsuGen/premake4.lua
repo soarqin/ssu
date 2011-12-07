@@ -10,6 +10,6 @@ project "SsuGen"
         buildoptions { "-std=gnu++0x" }
 
     configuration { "Debug" }
-        prebuildcommands { currPath .. "/../bin/debug/lemon.exe T=" .. currPath .. "/../lemon/lempar.c " .. currPath .. "/SsuLex.y" }
+        prebuildcommands { currPath .. "/../bin/debug/lemon T=" .. currPath .. "/../lemon/lempar.c " .. currPath .. "/SsuLex.y" }
     configuration { "Release" }
-        prebuildcommands { currPath .. "/../bin/release/lemon.exe T=" .. currPath .. "/../lemon/lempar.c " .. currPath .. "/SsuLex.y" }
+        prebuildcommands { currPath .. "/../bin/release/lemon T=" .. currPath .. "/../lemon/lempar.c " .. currPath .. "/SsuLex.y" }
