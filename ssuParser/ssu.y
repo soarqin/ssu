@@ -105,6 +105,7 @@ vorder ::= ASSIGN integer(A). {pss->order = A;}
 vorder ::= .
 
 vdefault ::= LSBRACKET DEFAULT ASSIGN string(A) RSBRACKET . {pss->defVal = A;}
+vdefault ::= LSBRACKET PACKED ASSIGN string(A) RSBRACKET . {pss->defVal = A;}
 vdefault ::= .
 
 

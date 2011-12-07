@@ -35,7 +35,7 @@ int main(int, char * argv[])
 // 	ts = GetTickCount();
 // 	for(int i = 0; i < 1000000; ++ i)
 	{
-		StructTest st;
+		test::ssutest::test1::StructTest st;
 		testIt(st);
 		std::string n;
 		st.AppendToString(&n);
@@ -49,9 +49,10 @@ int main(int, char * argv[])
 // 	ts = GetTickCount();
 // 	for(int i = 0; i < 1000000; ++ i)
 	{
-		ssutest::StructTest st2;
+		ssutest::test::ssutest::test1::StructTest st2;
 		testIt(st2);
 		std::vector<unsigned char> buf;
+		st2.pack(buf);
 		st2.pack(buf);
 		for(auto it = buf.begin(); it != buf.end(); ++ it)
 		{
@@ -59,7 +60,7 @@ int main(int, char * argv[])
 		}
 		printf("\n");
 
-		ssutest::StructTest st3;
+		ssutest::test::ssutest::test1::StructTest st3;
 		st3.unpack(&buf[0], buf.size());
 		printf("end\n");
 	}

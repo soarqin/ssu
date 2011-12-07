@@ -263,6 +263,7 @@ struct TokenAssign
 	{"bool", TK_BOOL},
 	{"bytes", TK_VECTOR},
 	{"default", TK_DEFAULT},
+	{"packed", TK_PACKED},
 	{NULL, TK_CUSTOM},
 };
 

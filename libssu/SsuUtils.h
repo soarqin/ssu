@@ -159,6 +159,13 @@ namespace ssu
 			return sz;
 		}
 
+		template<typename T, typename F>
+		static inline size_t sizeRepeatedPacked(std::vector<T>& val, F func)
+		{
+			size_t sz = sizeRepeated(val, func);
+			return sz + sizeUInt32(sz);
+		}
+
 		static inline unsigned char * packInt32( unsigned char * buf, int val )
 		{
 			if(val < 0)
@@ -379,6 +386,18 @@ namespace ssu
 			return buf;
 		}
 
+		template<typename T, typename F, typename SF>
+		static inline unsigned char * packRepeatedPackedTag( unsigned char * buf, unsigned int id, std::vector<T>& val, F func, SF sizefunc)
+		{
+			buf = packTag(buf, id, 2);
+			buf = packUInt32(buf, sizeRepeated(val, sizefunc));
+			for(std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			{
+				buf = func(buf, *iter);
+			}
+			return buf;
+		}
+
 		static inline bool unpackInt32( const unsigned char *& buf, size_t& leftSize, int& val )
 		{
 			unsigned long long n = 0;
@@ -530,7 +549,8 @@ namespace ssu
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
-			if(!val->unpackBuffer(thisbuf, n))
+			unsigned int lsize = n;
+			if(!val->unpackBuffer(thisbuf, lsize))
 				return false;
 			buf += n;
 			leftSize -= n;
@@ -568,16 +588,57 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
+		static inline bool unpackRepeatedPacked(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		{
+			unsigned int n;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			const unsigned char * thisbuf = buf;
+			unsigned int lsize = n;
+			while(lsize > 0)
+			{
+				T singleVal;
+				if(!func(thisbuf, lsize, singleVal))
+					return false;
+				val.push_back(singleVal);
+			}
+			buf += n;
+			leftSize -= n;
+			return true;
+		}
+
+		template<typename T, typename F>
 		static inline bool unpackRepeatedPtr(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
 		{
 			unsigned int n;
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
+			unsigned int nsize = n;
 			T singleVal;
-			if(!func(thisbuf, n, singleVal))
+			if(!func(thisbuf, nsize, singleVal))
 				return false;
 			val.push_back(singleVal);
+			buf += n;
+			leftSize -= n;
+			return true;
+		}
+
+		template<typename T, typename F>
+		static inline bool unpackRepeatedPackedPtr(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		{
+			unsigned int n;
+			if(!unpackUInt32(buf, leftSize, n))
+				return false;
+			const unsigned char * thisbuf = buf;
+			unsigned int nsize = n;
+			while(nsize > 0)
+			{
+				T singleVal;
+				if(!func(thisbuf, nsize, singleVal))
+					return false;
+				val.push_back(singleVal);
+			}
 			buf += n;
 			leftSize -= n;
 			return true;
