@@ -11,9 +11,9 @@ void testIt(T& st)
 {
 	st.setSa(true);
 	st.setSb(-1);
-	T::StructA * sa = st.addSc();
+	typename T::StructA * sa = st.addSc();
 	sa->setAbc(15555555);
-	T::StructA * sa2 = st.mutableSd();
+	typename T::StructA * sa2 = st.mutableSd();
 	sa2->setAbc(3838555);
 	st.addSe(105);
 	st.addSe(-999);
@@ -53,7 +53,6 @@ int main(int, char * argv[])
 		testIt(st2);
 		std::vector<unsigned char> buf;
 		st2.pack(buf);
-		st2.pack(buf);
 		for(auto it = buf.begin(); it != buf.end(); ++ it)
 		{
 			printf(" %02X", (unsigned char)*it);
@@ -62,7 +61,6 @@ int main(int, char * argv[])
 
 		ssutest::test::ssutest::test1::StructTest st3;
 		st3.unpack(&buf[0], buf.size());
-		printf("end\n");
 	}
 // 	printf("elapsed: %ums\n", GetTickCount() - ts);
 	return 0;

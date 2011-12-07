@@ -409,8 +409,6 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
 
 void process(FILE * outputFileC, FILE * outputFileH, SSUStruct& ssus)
 {
-	int indent = 0;
-
 	fprintf(outputFileH, "#include \"SsuObject.h\"\n\n");
 
 	int namespaceLevel = 0;

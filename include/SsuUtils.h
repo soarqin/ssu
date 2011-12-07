@@ -1,7 +1,7 @@
 #ifndef _SSUUTILS_H_
 #define _SSUUTILS_H_
 
-#include "ReferredObject.h"
+#include "SsuReferred.h"
 
 namespace ssu
 {
@@ -152,7 +152,7 @@ namespace ssu
 		static inline size_t sizeRepeated(std::vector<T>& val, F func)
 		{
 			size_t sz = 0;
-			for(std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
 			{
 				sz += func(*iter);
 			}
@@ -268,7 +268,7 @@ namespace ssu
 		template<typename T, typename F>
 		static inline unsigned char * packRepeated(unsigned char * buf, std::vector<T>& val, F func)
 		{
-			for(std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
 			{
 				buf = func(buf, *iter);
 			}
@@ -379,7 +379,7 @@ namespace ssu
 		template<typename T, typename F>
 		static inline unsigned char * packRepeatedTag( unsigned char * buf, unsigned int id, std::vector<T>& val, F func )
 		{
-			for(std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
 			{
 				buf = func(buf, id, *iter);
 			}
@@ -391,7 +391,7 @@ namespace ssu
 		{
 			buf = packTag(buf, id, 2);
 			buf = packUInt32(buf, sizeRepeated(val, sizefunc));
-			for(std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
 			{
 				buf = func(buf, *iter);
 			}

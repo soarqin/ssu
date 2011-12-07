@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include <cstdlib>
 
 static unsigned int str_to_uint(const char * str)
 {
@@ -222,8 +223,8 @@ static void appendField(SSUStruct * st)
 	st->currentStruct->fieldMap[st->name] = fd;
 }
 
-#include "ssu.h"
-#include "ssu.c"
+#include "SsuLex.h"
+#include "SsuLex.c"
 
 struct TokenAssign
 {

@@ -1,4 +1,5 @@
 #include "Process.h"
+#include <cstdlib>
 
 int main(int argc, char *argv[])
 {
