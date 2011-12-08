@@ -549,7 +549,7 @@ namespace ssu
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
-			unsigned int lsize = n;
+			size_t lsize = n;
 			if(!val->unpackBuffer(thisbuf, lsize))
 				return false;
 			buf += n;
@@ -594,7 +594,7 @@ namespace ssu
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
-			unsigned int lsize = n;
+			size_t lsize = n;
 			while(lsize > 0)
 			{
 				T singleVal;
@@ -614,7 +614,7 @@ namespace ssu
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
-			unsigned int nsize = n;
+			size_t nsize = n;
 			T singleVal;
 			if(!func(thisbuf, nsize, singleVal))
 				return false;
@@ -631,7 +631,7 @@ namespace ssu
 			if(!unpackUInt32(buf, leftSize, n))
 				return false;
 			const unsigned char * thisbuf = buf;
-			unsigned int nsize = n;
+			size_t nsize = n;
 			while(nsize > 0)
 			{
 				T singleVal;

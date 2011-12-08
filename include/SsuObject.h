@@ -9,13 +9,6 @@
 namespace ssu
 {
 
-	class Packer
-	{
-
-	private:
-		std::vector<unsigned char>& buf;
-	};
-
 	class Object
 	{
 	public:
