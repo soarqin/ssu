@@ -112,7 +112,10 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 		{
 			rstr += sprintIndent(indent, tmpStr, "%s _%s;\n", type, name.c_str());
 		}
-		pkstr += sprintIndent(indentSize, tmpStr, "buf = ::ssu::Utils::pack%sTag(buf, %d, _%s);\n", funcName, oorder, name.c_str());
+		if(constraint == 1)
+			pkstr += sprintIndent(indentSize, tmpStr, "buf = ::ssu::Utils::pack%sTag(buf, %d, _%s);\n", funcName, oorder, name.c_str());
+		else
+			pkstr += sprintIndent(indentSize, tmpStr, "if(has%s()) buf = ::ssu::Utils::pack%sTag(buf, %d, _%s);\n", uName.c_str(), funcName, oorder, name.c_str());
 		upkstr += sprintIndent(indentSize * 3, tmpStr, "if(type_ != %d || !::ssu::Utils::unpack%s(buf, leftSize, _%s)) return false;\n", typeInt_[typeId], funcName, name.c_str());
 		if(constraint == 2)
 			upkstr += sprintIndent(indentSize * 3, tmpStr, "_isSetFlag[%d] |= 0x%02X;\n", order / 32, 1 << (order % 32));
