@@ -152,7 +152,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 		if(constraint == 1)
 			sprintf(tmpStr, "%u + ::ssu::Utils::size%s(_%s)", sizeUInt32(oorder << 3), funcName, name.c_str());
 		else
-			sprintf(tmpStr, "%u + (has%s() ? ::ssu::Utils::size%s(_%s) : 0)", sizeUInt32(oorder << 3), uName.c_str(), funcName, name.c_str());
+			sprintf(tmpStr, "(has%s() ? (%u + ::ssu::Utils::size%s(_%s)) : 0)", sizeUInt32(oorder << 3), uName.c_str(), funcName, name.c_str());
 		sstr += tmpStr;
 
 		bool useRef = typeId == TYPE_STRUCT || typeId == TYPE_STRING || typeId == TYPE_VECTOR;
