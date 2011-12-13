@@ -149,7 +149,10 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			upkstr += sprintIndent(indentSize * 3, tmpStr, "_isSetFlag[%d] |= 0x%02X;\n", order / 32, 1 << (order % 32));
 		if(!sstr.empty())
 			sstr += " + ";
-		sprintf(tmpStr, "%u + ::ssu::Utils::size%s(_%s)", sizeUInt32(oorder << 3), funcName, name.c_str());
+		if(constraint == 1)
+			sprintf(tmpStr, "%u + ::ssu::Utils::size%s(_%s)", sizeUInt32(oorder << 3), funcName, name.c_str());
+		else
+			sprintf(tmpStr, "%u + (has%s() ? ::ssu::Utils::size%s(_%s) : 0)", sizeUInt32(oorder << 3), funcName, name.c_str());
 		sstr += tmpStr;
 
 		bool useRef = typeId == TYPE_STRUCT || typeId == TYPE_STRING || typeId == TYPE_VECTOR;
