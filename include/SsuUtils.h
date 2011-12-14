@@ -525,6 +525,7 @@ namespace ssu
 		{
 			if(leftSize == 0)
 				return false;
+			-- leftSize;
 			val = (*buf++) != 0;
 			return true;
 		}
