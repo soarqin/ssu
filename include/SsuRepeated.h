@@ -26,35 +26,59 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _REFERREDOBJECT_H_
-#define _REFERREDOBJECT_H_
+#ifndef _REPEATEDOBJECT_H_
+#define _REPEATEDOBJECT_H_
 
 #include <cstdlib>
+#include <vector>
 
 namespace ssu
 {
 
 template<typename T>
-class ReferredObject
+class RepeatedObject
 {
 public:
-	inline ReferredObject<T>(): _obj(NULL) {}
-	inline ~ReferredObject<T>() { delete _obj; }
-	inline operator const T&() const { return *_obj; }
-	inline operator T&() { checkObject(); return *_obj; }
-	inline const T * get() const { return _obj; }
-	inline ReferredObject<T>& operator=(const T& other ) { checkObject(); *_obj = other; return *this; }
-	inline T * getMutable() { checkObject(); return _obj; }
-
-private:
-	inline void checkObject()
+	typedef T* iterator;
+	typedef const T* const_iterator;
+public:
+	inline RepeatedObject<T>(): _objs(_initObj), _size(0), _capacity(_initSize) {}
+	~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
+	inline const T& operator[](size_t idx) const { return _objs[idx]; }
+	inline T& operator[](size_t idx) { return _objs[idx]; }
+	inline void reserve(size_t newsize)
 	{
-		if(!_obj)
-			_obj = new(std::nothrow) T;
+		_capacity = std::max(newsize, _capacity * 2);
+		T * oldObjs = _objs;
+		_objs = new T[_capacity];
+		memcpy(_objs, oldObjs, sizeof(T) * _size);
 	}
+	inline void add(const T& val)
+	{
+		if(_size >= _capacity)
+			reserve(_capacity + 1);
+		_objs[_size ++] = val;
+	}
+	inline T& add()
+	{
+		if(_size >= _capacity)
+			reserve(_capacity + 1);
+		return _objs[_size ++];
+	}
+	inline size_t size() const { return _size; }
+	inline size_t capacity() const { return _capacity; }
+	inline iterator begin() { return _objs; }
+	inline iterator end() { return _objs + _size; }
+	inline const_iterator begin() const { return _objs; }
+	inline const_iterator end() const { return _objs + _size; }
+	inline void clear() { if(_objs != _initObj) delete[] _objs; _objs = _initObj; _size = 0; _capacity = _initSize; }
 
 private:
-	T * _obj;
+	static const int _initSize = 8;
+	T * _objs;
+	size_t _size;
+	size_t _capacity;
+	T _initObj[_initSize];
 };
 
 }

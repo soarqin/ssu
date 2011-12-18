@@ -30,6 +30,7 @@
 #define _SSUUTILS_H_
 
 #include "SsuReferred.h"
+#include "SsuRepeated.h"
 
 namespace ssu
 {
@@ -152,9 +153,9 @@ namespace ssu
 			return sizeUInt32(val.size()) + val.size();
 		}
 
-		static inline size_t sizeVector( const std::vector<unsigned char>& val )
+		static inline size_t sizeStringPtr( const std::string * val )
 		{
-			return sizeUInt32(val.size()) + val.size();
+			return sizeUInt32(val->size()) + val->size();
 		}
 
 		static inline size_t sizeBinary( const void * val, size_t len )
@@ -163,7 +164,7 @@ namespace ssu
 		}
 
 		template<typename T>
-		static inline size_t sizeObject(T * val)
+		static inline size_t sizeObject(const T * val)
 		{
 			size_t sz = val->size();
 			return sizeUInt32(sz) + sz;
@@ -177,18 +178,19 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
-		static inline size_t sizeRepeated(std::vector<T>& val, F func)
+		static inline size_t sizeRepeated(const RepeatedObject<T>& val, F func)
 		{
 			size_t sz = 0;
-			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			typename RepeatedObject<T>::const_iterator iter = val.begin(), iter_end = val.end();
+			while(iter != val.end())
 			{
-				sz += func(*iter);
+				sz += func(*(iter ++));
 			}
 			return sz;
 		}
 
 		template<typename T, typename F>
-		static inline size_t sizeRepeatedPacked(std::vector<T>& val, F func)
+		static inline size_t sizeRepeatedPacked(const RepeatedObject<T>& val, F func)
 		{
 			size_t sz = sizeRepeated(val, func);
 			return sz + sizeUInt32(sz);
@@ -268,13 +270,6 @@ namespace ssu
 			return buf + sz;
 		}
 
-		static inline unsigned char * packVector( unsigned char * buf, const std::vector<unsigned char>& val )
-		{
-			size_t sz = val.size();
-			memcpy(buf, &val[0], sz);
-			return buf + sz;
-		}
-
 		static inline unsigned char * packBinary( unsigned char * buf, const void * val, size_t len )
 		{
 			memcpy(buf, val, len);
@@ -294,11 +289,12 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
-		static inline unsigned char * packRepeated(unsigned char * buf, std::vector<T>& val, F func)
+		static inline unsigned char * packRepeated(unsigned char * buf, RepeatedObject<T>& val, F func)
 		{
-			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
+			while(iter != val.end())
 			{
-				buf = func(buf, *iter);
+				buf = func(buf, *(iter ++));
 			}
 			return buf;
 		}
@@ -376,11 +372,11 @@ namespace ssu
 			return packString(buf, val);
 		}
 
-		static inline unsigned char * packVectorTag( unsigned char * buf, unsigned int id, const std::vector<unsigned char>& val )
+		static inline unsigned char * packStringPtrTag( unsigned char * buf, unsigned int id, const std::string * val )
 		{
 			buf = packTag(buf, id, 2);
-			buf = packUInt32(buf, val.size());
-			return packVector(buf, val);
+			buf = packUInt32(buf, val->size());
+			return packString(buf, *val);
 		}
 
 		static inline unsigned char * packBinaryTag( unsigned char * buf, unsigned int id,  const void * val, size_t len )
@@ -405,23 +401,25 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
-		static inline unsigned char * packRepeatedTag( unsigned char * buf, unsigned int id, std::vector<T>& val, F func )
+		static inline unsigned char * packRepeatedTag( unsigned char * buf, unsigned int id, RepeatedObject<T>& val, F func )
 		{
-			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
+			while(iter != val.end())
 			{
-				buf = func(buf, id, *iter);
+				buf = func(buf, id, *(iter ++));
 			}
 			return buf;
 		}
 
 		template<typename T, typename F, typename SF>
-		static inline unsigned char * packRepeatedPackedTag( unsigned char * buf, unsigned int id, std::vector<T>& val, F func, SF sizefunc)
+		static inline unsigned char * packRepeatedPackedTag( unsigned char * buf, unsigned int id, RepeatedObject<T>& val, F func, SF sizefunc)
 		{
 			buf = packTag(buf, id, 2);
 			buf = packUInt32(buf, sizeRepeated(val, sizefunc));
-			for(typename std::vector<T>::iterator iter = val.begin(); iter != val.end(); ++ iter)
+			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
+			while(iter != val.end())
 			{
-				buf = func(buf, *iter);
+				buf = func(buf, *(iter ++));
 			}
 			return buf;
 		}
@@ -545,16 +543,14 @@ namespace ssu
 			return true;
 		}
 
-		static inline bool unpackVector( const unsigned char *& buf, size_t& leftSize, std::vector<unsigned char>& val )
+		static inline bool unpackStringPtr( const unsigned char *& buf, size_t& leftSize, std::string *& val )
 		{
-			unsigned int length = 0;
+			unsigned int length;
 			if(!unpackUInt32(buf, leftSize, length))
 				return false;
 			if(length > leftSize)
 				length = leftSize;
-			val.resize(length);
-			if(length > 0)
-				memcpy(&val[0], buf, length);
+			val = new std::string(reinterpret_cast<const char *>(buf), length);
 			leftSize -= length;
 			buf += length;
 			return true;
@@ -607,17 +603,17 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
-		static inline bool unpackRepeated(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		static inline bool unpackRepeated(const unsigned char *& buf, size_t& leftSize, RepeatedObject<T>& val, F func)
 		{
 			T singleVal;
 			if(!func(buf, leftSize, singleVal))
 				return false;
-			val.push_back(singleVal);
+			val.add(singleVal);
 			return true;
 		}
 
 		template<typename T, typename F>
-		static inline bool unpackRepeatedPacked(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		static inline bool unpackRepeatedPacked(const unsigned char *& buf, size_t& leftSize, RepeatedObject<T>& val, F func)
 		{
 			unsigned int n;
 			if(!unpackUInt32(buf, leftSize, n))
@@ -629,7 +625,7 @@ namespace ssu
 				T singleVal;
 				if(!func(thisbuf, lsize, singleVal))
 					return false;
-				val.push_back(singleVal);
+				val.add(singleVal);
 			}
 			buf += n;
 			leftSize -= n;
@@ -637,7 +633,7 @@ namespace ssu
 		}
 
 		template<typename T, typename F>
-		static inline bool unpackRepeatedPtr(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		static inline bool unpackRepeatedPtr(const unsigned char *& buf, size_t& leftSize, RepeatedObject<T>& val, F func)
 		{
 			unsigned int n;
 			if(!unpackUInt32(buf, leftSize, n))
@@ -647,14 +643,14 @@ namespace ssu
 			T singleVal;
 			if(!func(thisbuf, nsize, singleVal))
 				return false;
-			val.push_back(singleVal);
+			val.add(singleVal);
 			buf += n;
 			leftSize -= n;
 			return true;
 		}
 
 		template<typename T, typename F>
-		static inline bool unpackRepeatedPackedPtr(const unsigned char *& buf, size_t& leftSize, std::vector<T>& val, F func)
+		static inline bool unpackRepeatedPackedPtr(const unsigned char *& buf, size_t& leftSize, RepeatedObject<T>& val, F func)
 		{
 			unsigned int n;
 			if(!unpackUInt32(buf, leftSize, n))
@@ -666,7 +662,7 @@ namespace ssu
 				T singleVal;
 				if(!func(thisbuf, nsize, singleVal))
 					return false;
-				val.push_back(singleVal);
+				val.add(singleVal);
 			}
 			buf += n;
 			leftSize -= n;

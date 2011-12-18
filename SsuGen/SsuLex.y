@@ -124,7 +124,6 @@ vtype ::= FLOAT. {pss->type = TYPE_FLOAT; pss->tname = "";}
 vtype ::= DOUBLE. {pss->type = TYPE_DOUBLE; pss->tname = "";}
 vtype ::= STRING. {pss->type = TYPE_STRING; pss->tname = "";}
 vtype ::= BOOL. {pss->type = TYPE_BOOL; pss->tname = "";}
-vtype ::= VECTOR. {pss->type = TYPE_VECTOR; pss->tname = "";}
 vtype ::= string(A). {pss->type = TYPE_STRUCT; pss->tname = A;}
 
 vname ::= string(A). {pss->name = A;}

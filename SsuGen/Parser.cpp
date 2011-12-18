@@ -290,7 +290,6 @@ struct TokenAssign
 	{"double", TK_DOUBLE},
 	{"string", TK_STRING},
 	{"bool", TK_BOOL},
-	{"bytes", TK_VECTOR},
 	{"default", TK_DEFAULT},
 	{"packed", TK_PACKED},
 	{NULL, TK_CUSTOM},

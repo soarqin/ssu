@@ -56,7 +56,7 @@ namespace ssu
 			const unsigned char * buf = reinterpret_cast<const unsigned char *>(buffer);
 			return unpackBuffer(buf, length);
 		}
-		virtual size_t size() = 0;
+		virtual size_t size() const = 0;
 		virtual unsigned char * packBuffer(unsigned char * buf) = 0;
 		virtual bool unpackBuffer(const unsigned char *& buf, size_t& leftSize) = 0;
 	};
