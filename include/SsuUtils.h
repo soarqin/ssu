@@ -182,7 +182,7 @@ namespace ssu
 		{
 			size_t sz = 0;
 			typename RepeatedObject<T>::const_iterator iter = val.begin(), iter_end = val.end();
-			while(iter != val.end())
+			while(iter != iter_end)
 			{
 				sz += func(*(iter ++));
 			}
@@ -292,7 +292,7 @@ namespace ssu
 		static inline unsigned char * packRepeated(unsigned char * buf, RepeatedObject<T>& val, F func)
 		{
 			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
-			while(iter != val.end())
+			while(iter != iter_end)
 			{
 				buf = func(buf, *(iter ++));
 			}
@@ -404,7 +404,7 @@ namespace ssu
 		static inline unsigned char * packRepeatedTag( unsigned char * buf, unsigned int id, RepeatedObject<T>& val, F func )
 		{
 			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
-			while(iter != val.end())
+			while(iter != iter_end)
 			{
 				buf = func(buf, id, *(iter ++));
 			}
@@ -417,7 +417,7 @@ namespace ssu
 			buf = packTag(buf, id, 2);
 			buf = packUInt32(buf, sizeRepeated(val, sizefunc));
 			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
-			while(iter != val.end())
+			while(iter != iter_end)
 			{
 				buf = func(buf, *(iter ++));
 			}
