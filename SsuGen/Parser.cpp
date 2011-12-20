@@ -54,23 +54,24 @@ static void importFile(SSUStruct * pss, const char * fname)
 {
 	if(fname[0] != '/' && fname[0] != '\\')
 	{
-		std::string::iterator it = pss->fileName.end();
-		while(it != pss->fileName.begin())
+		const std::string& fileName = *(pss->fileName.end() - 1);
+		std::string::const_iterator it = fileName.end();
+		while(it != fileName.begin())
 		{
 			char c = *(--it);
 			if(c == '/' || c == '\\')
 			{
 				++ it;
-				std::string newname(pss->fileName.begin(), it);
+				std::string newname(fileName.begin(), it);
 				newname += fname;
-				parse(newname.c_str(), *pss, false);
+				parse(newname.c_str(), *pss);
 				printf_debug("import %s\n", newname.c_str());
 				return;
 			}
 		}
 	}
-	printf_debug("import %s\n", fname);
-	parse(fname, *pss, false);
+	printf_debug("import %s\n");
+	parse(fname, *pss);
 }
 
 static void reset(SSUStruct * pss)
@@ -392,11 +393,11 @@ static char * extractComment(char * s, int& err)
 	}
 
 
-void parse(const char * filename, SSUStruct& ssus, bool isTop)
+void parse(const char * filename, SSUStruct& ssus)
 {
 	void * parser = ssuParserAlloc(malloc);
 	FILE * f = fopen(filename, "rt");
-	if(isTop) ssus.fileName = filename;
+	ssus.fileName.push_back(filename);
 
 	while(!feof(f))
 	{
@@ -484,4 +485,5 @@ void parse(const char * filename, SSUStruct& ssus, bool isTop)
 
 	ssuParser(parser, 0, NULL, &ssus);
 	ssuParserFree(parser, free);
+	ssus.fileName.erase(ssus.fileName.end() - 1);
 }

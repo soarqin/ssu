@@ -154,7 +154,7 @@ struct SSUStruct
 		name = "";
 		defVal = "";
 	}
-	std::string fileName;
+	std::vector<std::string> fileName;
 	std::string packageName;
 	std::map<std::string, std::string> options;
 	std::map<std::string, StructDef *> structs;
@@ -170,4 +170,4 @@ struct SSUStruct
 	char comment[16384];
 };
 
-extern void parse(const char * filename, SSUStruct&, bool = true);
+extern void parse(const char * filename, SSUStruct&);
