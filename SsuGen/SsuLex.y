@@ -49,6 +49,7 @@ input ::= exprlist.
 /* Structure defines */
 exprlist ::= exprlist eoption.
 exprlist ::= exprlist epackage.
+exprlist ::= exprlist eimport.
 exprlist ::= exprlist eenum.
 exprlist ::= exprlist estruct.
 exprlist ::= exprlist comment.
@@ -62,6 +63,10 @@ ovalue ::= string(A). {pss->name = A;}
 /* Package keyword */
 epackage ::= PACKAGE pname DELIM. {setPackage(pss); reset(pss);}
 pname ::= string(A). {pss->name = A;}
+
+/* Import keyword */
+eimport ::= IMPORT iname DELIM.
+iname ::= string(A). { importFile(pss, A); }
 
 /* Enum keyword */
 eenum ::= eenumstart LBRACE evallist RBRACE. {endEnum(pss);}

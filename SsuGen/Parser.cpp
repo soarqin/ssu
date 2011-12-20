@@ -50,6 +50,29 @@ static unsigned int str_to_uint(const char * str)
 	return result;
 }
 
+static void importFile(SSUStruct * pss, const char * fname)
+{
+	if(fname[0] != '/' && fname[0] != '\\')
+	{
+		std::string::iterator it = pss->fileName.end();
+		while(it != pss->fileName.begin())
+		{
+			char c = *(--it);
+			if(c == '/' || c == '\\')
+			{
+				++ it;
+				std::string newname(pss->fileName.begin(), it);
+				newname += fname;
+				parse(newname.c_str(), *pss, false);
+				printf_debug("import %s\n", newname.c_str());
+				return;
+			}
+		}
+	}
+	printf_debug("import %s\n", fname);
+	parse(fname, *pss, false);
+}
+
 static void reset(SSUStruct * pss)
 {
 	pss->reset();
@@ -266,6 +289,7 @@ struct TokenAssign
 	{"enum", TK_ENUM},
 	{"option", TK_OPTION},
 	{"package", TK_PACKAGE},
+	{"import", TK_IMPORT},
 	{"{", TK_LBRACE},
 	{"}", TK_RBRACE},
 	{"[", TK_LSBRACKET},
@@ -368,10 +392,11 @@ static char * extractComment(char * s, int& err)
 	}
 
 
-void parse(const char * filename, SSUStruct& ssus)
+void parse(const char * filename, SSUStruct& ssus, bool isTop)
 {
 	void * parser = ssuParserAlloc(malloc);
 	FILE * f = fopen(filename, "rt");
+	if(isTop) ssus.fileName = filename;
 
 	while(!feof(f))
 	{
@@ -408,26 +433,26 @@ void parse(const char * filename, SSUStruct& ssus)
 			case 9:
 				if(scurrent != sstart)
 				{
-					PUSH_LASTTOKEN
+					PUSH_LASTTOKEN;
 				}
 				nextLine = true;
 				break;
 			case 8:
 				{
-					PUSH_LASTTOKEN
-						do
-						{
-							++ scurrent;
-						}
-						while(typeFromChar(*scurrent) == 8);
-						sstart = scurrent;
-						currentCharId = -1;
-						continue;
+					PUSH_LASTTOKEN;
+					do
+					{
+						++ scurrent;
+					}
+					while(typeFromChar(*scurrent) == 8);
+					sstart = scurrent;
+					currentCharId = -1;
+					continue;
 				}
 			case 7:
 				{
-					PUSH_LASTTOKEN
-						sstart = scurrent + 1;
+					PUSH_LASTTOKEN;
+					sstart = scurrent + 1;
 					scurrent = strchr(sstart, *scurrent);
 					std::string tmpStr2(sstart, scurrent);
 					ssuParser(parser, TK_CUSTOM, strdup(tmpStr2.c_str()), &ssus);
@@ -439,7 +464,7 @@ void parse(const char * filename, SSUStruct& ssus)
 				if(charId != currentCharId)
 				{
 					PUSH_LASTTOKEN
-						currentCharId = charId;
+					currentCharId = charId;
 					sstart = scurrent;
 				}
 				if(charId == 0)
