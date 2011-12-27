@@ -2,7 +2,7 @@ project "SsuGen"
     language "C++"
     kind "ConsoleApp"
 
-    files { "Parser.*", "Process.*", "SsuGen.cpp", "SsuLex.h" }
+    files { "Parser.*", "Process.*", "SsuGen.cpp", "LexUtil.h" }
 
     currPath = path.getdirectory(_SCRIPT)
 
