@@ -57,8 +57,12 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	int pos = (int)strlen(argv[3]) - 1;
+	while(pos >= 0 && argv[3][pos] != '/' && argv[3][pos] != '\\') -- pos;
+	++ pos;
+
 	char hprotect[4096] = "_SSU_";
-	strcpy(hprotect + 5, argv[3]);
+	strcpy(hprotect + 5, argv[3] + pos);
 	size_t len = strlen(hprotect);
 	for(size_t i = 5; i < len; ++ i)
 	{
@@ -69,7 +73,7 @@ int main(int argc, char *argv[])
 	}
 	strcat(hprotect, "_");
 
-	fprintf(outputFileC, "#include \"%s\"\n\n", argv[3]);
+	fprintf(outputFileC, "#include \"%s\"\n\n", argv[3] + pos);
 	fprintf(outputFileH, "#ifndef %s\n", hprotect);
 	fprintf(outputFileH, "#define %s\n\n", hprotect);
 	process(outputFileC, outputFileH, ssus);
