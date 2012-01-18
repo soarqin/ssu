@@ -155,6 +155,8 @@ struct SSUStruct
 		defVal = "";
 	}
 	std::vector<std::string> fileName;
+	std::vector<int> row, col;
+	std::string word;
 	std::string packageName;
 	std::map<std::string, std::string> options;
 	std::map<std::string, StructDef *> structs;

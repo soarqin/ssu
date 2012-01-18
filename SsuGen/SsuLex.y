@@ -33,11 +33,11 @@
 %extra_argument {SSUStruct *pss}
 
 %syntax_error {
-  fprintf(stderr, "Syntax error!\n"); exit(0);
+  onSyntaxError(pss);
 }
 
 %stack_overflow {
-  fprintf(stderr, "Stack overflow!\n"); exit(0);
+  onStackOverflow(pss);
 }
 
 %name ssuParser

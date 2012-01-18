@@ -70,7 +70,7 @@ static void importFile(SSUStruct * pss, const char * fname)
 			}
 		}
 	}
-	printf_debug("import %s\n");
+	printf_debug("import %s\n", fname);
 	parse(fname, *pss);
 }
 
@@ -275,6 +275,18 @@ static void appendField(SSUStruct * st)
 	st->currentStruct->fieldMap[st->name] = fd;
 }
 
+void onSyntaxError(SSUStruct * pss)
+{
+	fprintf(stderr, "Syntax error! [%s] %d:%d:%s", pss->fileName.back().c_str(), pss->row.back(), pss->col.back(), pss->word.c_str());
+	exit(0);
+}
+
+void onStackOverflow(SSUStruct * pss)
+{
+	fprintf(stderr, "Stack overflow! [%s] %d:%d:%s", pss->fileName.back().c_str(), pss->row.back(), pss->col.back(), pss->word.c_str());
+	exit(0);
+}
+
 #include "SsuLex.h"
 #include "SsuLex.c"
 
@@ -320,20 +332,20 @@ struct TokenAssign
 	{NULL, TK_CUSTOM},
 };
 
-inline void push(void * parser, SSUStruct * ssus, const char * token)
+inline void push(void * parser, SSUStruct * ssus)
 {
 	TokenAssign * assign;
 	for(assign = tokenAssigns; assign->token != NULL; ++ assign)
 	{
-		if(strcmp(assign->token, token) == 0)
+		if(strcmp(assign->token, ssus->word.c_str()) == 0)
 		{
-			printf_debug("%s %d\n", token, assign->id);
-			ssuParser(parser, assign->id, strdup(token), ssus);
+			printf_debug("%s %d\n", ssus->word.c_str(), assign->id);
+			ssuParser(parser, assign->id, strdup(ssus->word.c_str()), ssus);
 			return;
 		}
 	}
-	printf_debug("%s\n", token);
-	ssuParser(parser, TK_CUSTOM, strdup(token), ssus);
+	printf_debug("%s\n", ssus->word.c_str());
+	ssuParser(parser, TK_CUSTOM, strdup(ssus->word.c_str()), ssus);
 }
 
 inline int typeFromChar(unsigned char v)
@@ -388,8 +400,9 @@ static char * extractComment(char * s, int& err)
 #define PUSH_LASTTOKEN \
 	if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) \
 	{ \
-		std::string tmpStr(sstart, scurrent); \
-		push(parser, &ssus, tmpStr.c_str()); \
+		ssus.col.back() = sstart - s + 1; \
+		ssus.word.assign(sstart, scurrent); \
+		push(parser, &ssus); \
 	}
 
 
@@ -398,12 +411,14 @@ void parse(const char * filename, SSUStruct& ssus)
 	void * parser = ssuParserAlloc(malloc);
 	FILE * f = fopen(filename, "rt");
 	ssus.fileName.push_back(filename);
-
+	ssus.row.push_back(0);
+	ssus.col.push_back(0);
 	while(!feof(f))
 	{
 		char s[4096];
 		if(fgets(s, 4096, f) == NULL)
 			continue;
+		++ ssus.row.back();
 		size_t len = strlen(s);
 		if(len == 0)
 			continue;
@@ -470,8 +485,9 @@ void parse(const char * filename, SSUStruct& ssus)
 				}
 				if(charId == 0)
 				{
-					char vstr[2] = {*scurrent, 0};
-					push(parser, &ssus, vstr);
+					ssus.col.back() = scurrent - s + 1;
+					ssus.word = *scurrent;
+					push(parser, &ssus);
 					sstart = scurrent + 1;
 				}
 				break;
@@ -486,4 +502,6 @@ void parse(const char * filename, SSUStruct& ssus)
 	ssuParser(parser, 0, NULL, &ssus);
 	ssuParserFree(parser, free);
 	ssus.fileName.erase(ssus.fileName.end() - 1);
+	ssus.row.erase(ssus.row.end() - 1);
+	ssus.col.erase(ssus.col.end() - 1);
 }
