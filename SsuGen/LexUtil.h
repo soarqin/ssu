@@ -241,12 +241,17 @@ static void appendField(SSUStruct * st)
 		bool found = false;
 		if(st->currentStruct != NULL)
 		{
-			if(st->currentStruct->structs.find(st->tname) != st->currentStruct->structs.end())
-				found = true;
-			else if(st->currentStruct->enums.find(st->tname) != st->currentStruct->enums.end())
+			StructDef * sd = st->currentStruct;
+			while(sd != NULL && !found)
 			{
-				st->type = TYPE_ENUM;
-				found = true;
+				if(sd->structs.find(st->tname) != sd->structs.end())
+					found = true;
+				else if(sd->enums.find(st->tname) != sd->enums.end())
+				{
+					st->type = TYPE_ENUM;
+					found = true;
+				}
+				sd = sd->parent;
 			}
 		}
 		if(!found)
