@@ -214,11 +214,12 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				rstr += sprintIndent(indent, tmpStr, "::ssu::RepeatedObject<%s *> _%s;\n", type, name.c_str());
 
 				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s(size_t index__) const { return *_%s[index__]; }\n", type, lName.c_str(), name.c_str());
-				pstr += sprintIndent(indent, tmpStr, "inline void add%s(const %s& val__) { _%s.add(new std::string(val__)); }\n", uName.c_str(), type, name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline %s * new%s() { return new(std::nothrow) %s; }\n", type, uName.c_str(), type);
+				pstr += sprintIndent(indent, tmpStr, "inline void add%s(const %s& val__) { %s * val2__ = new(std::nothrow) %s(val__); if(val2__ == NULL) return; _%s.add(val2__); }\n", uName.c_str(), type, type, type, name.c_str());
 				if(typeId == TYPE_STRING)
 				{
-					pstr += sprintIndent(indent, tmpStr, "inline void add%s(const char * val__) { _%s.add(new std::string(val__)); }\n", uName.c_str(), name.c_str());
-					pstr += sprintIndent(indent, tmpStr, "inline void add%s(const char * val__, size_t size__) { _%s.add(new std::string(val__, size__)); }\n", uName.c_str(), name.c_str());
+					pstr += sprintIndent(indent, tmpStr, "inline void add%s(const char * val__) { std::string * val2__ = new(std::nothrow) std::string(val__); if(val2__ == NULL) return; _%s.add(val2__); }\n", uName.c_str(), name.c_str());
+					pstr += sprintIndent(indent, tmpStr, "inline void add%s(const char * val__, size_t size__) { std::string * val2__ = new(std::nothrow) std::string(val__, size__); if(val2__ == NULL) return; _%s.add(val2__); }\n", uName.c_str(), name.c_str());
 				}
 				pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, const %s& val__) { _%s[index__]->assign(val__); }\n", uName.c_str(), type, name.c_str());
 				if(typeId == TYPE_STRING)
@@ -226,7 +227,8 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 					pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, const char * val__) { _%s[index__]->assign(val__); }\n", uName.c_str(), name.c_str());
 					pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, const char * val__, size_t size__) { _%s[index__]->assign(val__, size__); }\n", uName.c_str(), name.c_str());
 				}
-				pstr += sprintIndent(indent, tmpStr, "inline %s& mutable%s(size_t index__) { return *_%s[index__]; }\n", type, uName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline %s& mutable%s(size_t index__) const { return *_%s[index__]; }\n", type, uName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline ::ssu::RepeatedObject<%s *>& mutable%s() { return _%s; }\n", type, uName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void clear%s() { for(::ssu::RepeatedObject<%s *>::iterator iter = _%s.begin(); iter != _%s.end(); ++ iter) { delete *iter; } _%s.clear(); }\n", uName.c_str(), type, name.c_str(), name.c_str(), name.c_str());
 
@@ -245,7 +247,9 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				rstr += sprintIndent(indent, tmpStr, "::ssu::RepeatedObject<%s *> _%s;\n", type, name.c_str());
 
 				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s(size_t index__) const { return *_%s[index__]; }\n", type, lName.c_str(), name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline %s * new%s() { return new(std::nothrow) %s; }\n", type, uName.c_str(), type);
 				pstr += sprintIndent(indent, tmpStr, "inline %s * add%s() { %s * val__ = new(std::nothrow) %s; if(val__ == NULL) return NULL; _%s.add(val__); return val__; }\n", type, uName.c_str(), type, type, name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline ::ssu::RepeatedObject<%s *>& mutable%s() { return _%s; }\n", type, uName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void clear%s() { for(::ssu::RepeatedObject<%s *>::iterator iter = _%s.begin(); iter != _%s.end(); ++ iter) { delete *iter; } _%s.clear(); }\n", uName.c_str(), type, name.c_str(), name.c_str(), name.c_str());
 
@@ -266,6 +270,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 				pstr += sprintIndent(indent, tmpStr, "inline %s %s(size_t index__) const { return _%s[index__]; }\n", type, lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void add%s(%s val__) { _%s.add(val__); }\n", uName.c_str(), type, name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void set%s(size_t index__, %s val__) { _%s[index__] = val__; }\n", uName.c_str(), type, name.c_str());
+				pstr += sprintIndent(indent, tmpStr, "inline ::ssu::RepeatedObject<%s>& mutable%s() { return _%s; }\n", type, uName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline size_t %sSize() const { return _%s.size(); }\n", lName.c_str(), name.c_str());
 				pstr += sprintIndent(indent, tmpStr, "inline void clear%s() { _%s.clear(); }\n", uName.c_str(), name.c_str());
 
@@ -308,6 +313,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			}
 			break;
 		}
+		pstr += sprintIndent(indent, tmpStr, "inline void reserve%s(size_t size__) { if(_%s.size() < size__) _%s.reserve(size__); }\n", uName.c_str(), name.c_str(), name.c_str());
 	}
 	upkstr += sprintIndent(indentSize * 3, tmpStr, "break;\n", funcName, oorder, name.c_str());
 	pstr += "\n";
