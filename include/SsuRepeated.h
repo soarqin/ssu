@@ -52,6 +52,7 @@ public:
 		T * oldObjs = _objs;
 		_objs = new T[_capacity];
 		memcpy(_objs, oldObjs, sizeof(T) * _size);
+		if(oldObjs != _initObj) delete[] oldObjs;
 	}
 	inline void add(const T& val)
 	{
