@@ -492,7 +492,6 @@ namespace ssu
 			if(leftSize == 0)
 				return false;
 			val = (*buf) & 0x7F;
-			-- leftSize;
 			unsigned int shiftn = 7;
 			while((*buf) >= 128)
 			{
