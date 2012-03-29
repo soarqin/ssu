@@ -118,7 +118,7 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 {
 	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "std::string", "bool", "enum", "struct" };
 	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Enum", "Referred" };
-	int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 2, 0, 2, 0, 2};
+	int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 2, 0, 0, 2};
 	char tmpStr[1024];
 
 	std::string lName = capitalize(name);
