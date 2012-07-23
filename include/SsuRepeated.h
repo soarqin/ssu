@@ -48,6 +48,7 @@ public:
 	inline T& operator[](size_t idx) { return _objs[idx]; }
 	inline void reserve(size_t newsize)
 	{
+		if(newsize <= _capacity) return;
 		_capacity = std::max(newsize, _capacity * 2);
 		T * oldObjs = _objs;
 		_objs = new T[_capacity];
