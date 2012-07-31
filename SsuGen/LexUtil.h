@@ -78,7 +78,7 @@ static unsigned int str_to_uint(SSUStruct * st, const char * str)
 		result = (unsigned int)strtoul(str, &endptr, 10);
 	if(endptr != NULL && *endptr != 0)
 	{
-		errorMsg(st, "'%s' Wrong number format!\n", str);
+		errorMsg(st, "'%s' Wrong number format!", str);
 		exit(0);
 	}
 	return result;
@@ -130,7 +130,7 @@ static void addEnum(SSUStruct * st)
 	{
 		if(st->enums.find(st->name) != st->enums.end())
 		{
-			fprintf(stderr, "Repeated enum name! %s\n", st->name);
+			fprintf(stderr, "Repeated enum name! %s", st->name);
 			exit(0);
 		}
 	}
@@ -138,7 +138,7 @@ static void addEnum(SSUStruct * st)
 	{
 		if(st->currentStruct->enums.find(st->name) != st->currentStruct->enums.end())
 		{
-			errorMsg(st, "'%s' Repeated enum name!\n", st->name);
+			errorMsg(st, "'%s' Repeated enum name!", st->name);
 			exit(0);
 		}
 	}
@@ -168,17 +168,17 @@ static void addEnumVal(SSUStruct * st)
 {
 	if(st->currentEnum == NULL)
 	{
-		errorMsg(st, "Wrong enum defines!\n");
+		errorMsg(st, "Wrong enum defines!");
 		exit(0);
 	}
 	if(st->currentEnum->vals.find(st->order) != st->currentEnum->vals.end())
 	{
-		errorMsg(st, "'%d' Repeated enum val order!\n", st->order);
+		errorMsg(st, "'%d' Repeated enum val order!", st->order);
 		exit(0);
 	}
 	if(st->currentEnum->valMap.find(st->name) != st->currentEnum->valMap.end())
 	{
-		errorMsg(st, "'%s' Repeated enum val name!\n", st->name);
+		errorMsg(st, "'%s' Repeated enum val name!", st->name);
 		exit(0);
 	}
 	EnumVal * ev = new EnumVal;
@@ -204,7 +204,7 @@ static void addStruct(SSUStruct * st)
 	}
 	if(repeat)
 	{
-		errorMsg(st, "'%s' Repeated struct name!\n", st->name);
+		errorMsg(st, "'%s' Repeated struct name!", st->name);
 		exit(0);
 	}
 	StructDef * sd = new StructDef;
@@ -231,7 +231,7 @@ static void endStruct(SSUStruct * st)
 	printf_debug("End Struct\n");
 	if(st->currentStruct == NULL)
 	{
-		errorMsg(st, "Wrong struct end!\n");
+		errorMsg(st, "Wrong struct end!");
 		exit(0);
 	}
 	st->currentStruct = st->currentStruct->parent;
@@ -243,7 +243,7 @@ static void appendField(SSUStruct * st)
 	printf_debug("Append field\n");
 	if(st->currentStruct == NULL)
 	{
-		errorMsg(st, "Wrong field!\n");
+		errorMsg(st, "Wrong field!");
 		exit(0);
 	}
 	if(st->order == 0)
@@ -259,12 +259,12 @@ static void appendField(SSUStruct * st)
 	}
 	else if(st->currentStruct->fields.find(st->order) != st->currentStruct->fields.end())
 	{
-		errorMsg(st, "'%d' Repeated order number!\n", st->order);
+		errorMsg(st, "'%d' Repeated order number!", st->order);
 		exit(0);
 	}
 	if(st->currentStruct->fieldMap.find(st->name) != st->currentStruct->fieldMap.end())
 	{
-		errorMsg(st, "'%s' Repeated field name !\n", st->name);
+		errorMsg(st, "'%s' Repeated field name !", st->name);
 		exit(0);
 	}
 	if(st->type == TYPE_STRUCT)
@@ -297,7 +297,7 @@ static void appendField(SSUStruct * st)
 		}
 		if(!found)
 		{
-			errorMsg(st, "'%s' Wrong field type!\n", st->tname);
+			errorMsg(st, "'%s' Wrong field type!", st->tname);
 			exit(0);
 		}
 	}
@@ -316,13 +316,13 @@ static void appendField(SSUStruct * st)
 
 void onSyntaxError(SSUStruct * st)
 {
-	errorMsg(st, "'%s' Syntax error!\n", st->word.c_str());
+	errorMsg(st, "'%s' Syntax error!", st->word.c_str());
 	exit(0);
 }
 
 void onStackOverflow(SSUStruct * st)
 {
-	errorMsg(st, "'%s' Stack overflow!\n", st->word.c_str());
+	errorMsg(st, "'%s' Stack overflow!", st->word.c_str());
 	exit(0);
 }
 
