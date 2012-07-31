@@ -146,7 +146,7 @@ comment ::= COMMENT(A). {if(pss->comment[0] != 0) strcat(pss->comment, "\n"); st
 
 /* Basic types */
 %type integer {int}
-integer(I) ::= CUSTOM(A). {I = str_to_uint(A);}
+integer(I) ::= CUSTOM(A). {I = str_to_uint(pss, A);}
 
 %type string {const char *}
 string(N) ::= CUSTOM(A). {N = A;}
