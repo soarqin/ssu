@@ -1,3 +1,7 @@
+IN ROADMAP:
 1. Version tag the library
-2. Make an own resizable array class to replace vector, which may boost performance
-3. Extend syntax
+2. Better error output
+3. Make interfaces for other programming language use
+
+PERHAPS:
+1. Extend syntax
