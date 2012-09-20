@@ -161,7 +161,8 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
 			if(useRef)
 			{
 				pstr += sprintIndent(indent, tmpStr, "inline const %s& %s() const { return _%s; }\n", type, lName.c_str(), name.c_str());
-				pstr += sprintIndent(indent, tmpStr, "inline void set%s(const %s& val__) { _%s = val__; }\n", uName.c_str(), type, name.c_str());
+				if(typeId != TYPE_STRUCT)
+					pstr += sprintIndent(indent, tmpStr, "inline void set%s(const %s& val__) { _%s = val__; }\n", uName.c_str(), type, name.c_str());
 				if(typeId == TYPE_STRING)
 					pstr += sprintIndent(indent, tmpStr, "inline %s& mutable%s() { return _%s; }\n", type, uName.c_str(), name.c_str());
 				else
