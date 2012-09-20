@@ -150,12 +150,13 @@ namespace ssu
 
 		static inline size_t sizeString( const std::string& val )
 		{
-			return sizeUInt32(val.size()) + val.size();
+			unsigned int sz = static_cast<unsigned int>(val.size());
+			return sizeUInt32(sz) + sz;
 		}
 
 		static inline size_t sizeStringPtr( const std::string * val )
 		{
-			return sizeUInt32(val->size()) + val->size();
+			return sizeString(*val);
 		}
 
 		static inline size_t sizeBinary( const void * val, size_t len )
@@ -167,14 +168,14 @@ namespace ssu
 		static inline size_t sizeObject(const T * val)
 		{
 			size_t sz = val->size();
-			return sizeUInt32(sz) + sz;
+			return sizeUInt32(static_cast<unsigned int>(sz)) + sz;
 		}
 
 		template<typename T>
 		static inline size_t sizeReferred(ReferredObject<T>& val)
 		{
 			size_t sz = val.getMutable()->size();
-			return sizeUInt32(sz) + sz;
+			return sizeUInt32(static_cast<unsigned int>(sz)) + sz;
 		}
 
 		template<typename T, typename F>
@@ -193,7 +194,7 @@ namespace ssu
 		static inline size_t sizeRepeatedPacked(const RepeatedObject<T>& val, F func)
 		{
 			size_t sz = sizeRepeated(val, func);
-			return sz + sizeUInt32(sz);
+			return sz + sizeUInt32(static_cast<unsigned int>(sz));
 		}
 
 		static inline unsigned char * packInt32( unsigned char * buf, int val )
@@ -368,21 +369,21 @@ namespace ssu
 		static inline unsigned char * packStringTag( unsigned char * buf, unsigned int id, const std::string& val )
 		{
 			buf = packTag(buf, id, 2);
-			buf = packUInt32(buf, val.size());
+			buf = packUInt32(buf, static_cast<unsigned int>(val.size()));
 			return packString(buf, val);
 		}
 
 		static inline unsigned char * packStringPtrTag( unsigned char * buf, unsigned int id, const std::string * val )
 		{
 			buf = packTag(buf, id, 2);
-			buf = packUInt32(buf, val->size());
+			buf = packUInt32(buf, static_cast<unsigned int>(val->size()));
 			return packString(buf, *val);
 		}
 
 		static inline unsigned char * packBinaryTag( unsigned char * buf, unsigned int id,  const void * val, size_t len )
 		{
 			buf = packTag(buf, id, 2);
-			buf = packUInt32(buf, len);
+			buf = packUInt32(buf, static_cast<unsigned int>(len));
 			return packBinary(buf, val, len);
 		}
 
@@ -415,7 +416,7 @@ namespace ssu
 		static inline unsigned char * packRepeatedPackedTag( unsigned char * buf, unsigned int id, RepeatedObject<T>& val, F func, SF sizefunc)
 		{
 			buf = packTag(buf, id, 2);
-			buf = packUInt32(buf, sizeRepeated(val, sizefunc));
+			buf = packUInt32(buf, static_cast<unsigned int>(sizeRepeated(val, sizefunc)));
 			typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
 			while(iter != iter_end)
 			{
@@ -532,12 +533,12 @@ namespace ssu
 			unsigned int length;
 			if(!unpackUInt32(buf, leftSize, length))
 				return false;
-			if(length > leftSize)
-				length = leftSize;
+			if(static_cast<size_t>(length) > leftSize)
+				length = static_cast<unsigned int>(leftSize);
 			val.resize(length);
 			if(length > 0)
 				memcpy(&val[0], buf, length);
-			leftSize -= length;
+			leftSize -= static_cast<size_t>(length);
 			buf += length;
 			return true;
 		}
@@ -547,8 +548,8 @@ namespace ssu
 			unsigned int length;
 			if(!unpackUInt32(buf, leftSize, length))
 				return false;
-			if(length > leftSize)
-				length = leftSize;
+			if(static_cast<size_t>(length) > leftSize)
+				length = static_cast<unsigned int>(leftSize);
 			val = new std::string(reinterpret_cast<const char *>(buf), length);
 			leftSize -= length;
 			buf += length;

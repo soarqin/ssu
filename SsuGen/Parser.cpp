@@ -153,9 +153,11 @@ void parse(const char * filename, SSUStruct& ssus)
 	ssus.fileName.push_back(filename);
 	ssus.row.push_back(0);
 	ssus.col.push_back(0);
+	int lineNo = 0;
 	while(!feof(f))
 	{
 		char s[4096];
+		++ lineNo;
 		if(fgets(s, 4096, f) == NULL)
 			continue;
 		++ ssus.row.back();
@@ -172,7 +174,7 @@ void parse(const char * filename, SSUStruct& ssus)
 		char * cmt = extractComment(s, err);
 		if(err)
 		{
-			fprintf(stderr, "Error! unpaired quotes!");
+			fprintf(stderr, "[%s] %d:1  Unpaired quotes!", filename, lineNo);
 			exit(0);
 		}
 		if(cmt != NULL)

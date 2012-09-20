@@ -31,8 +31,39 @@
 
 #include "Parser.h"
 #include <cstdlib>
+#include <cstdarg>
 
-static unsigned int str_to_uint(const char * str)
+static void errorMsg(SSUStruct * st, const char * str, ...)
+{
+	/* Guess we need no more than 256 bytes. */
+	int size = 256;
+
+	char *p = new(std::nothrow) char[size];
+	if (p == NULL)
+		return;
+
+	while (1) {
+		va_list ap;
+		va_start(ap, str);
+		int n = vsnprintf(p, size, str, ap);
+		va_end(ap);
+		if (n > -1 && n < size)
+			break;
+		if (n > -1)    /* glibc 2.1 */
+			size = n+1; /* precisely what is needed */
+		else           /* glibc 2.0 */
+			size *= 2;  /* twice the old size */
+		delete[] p;
+		if ((p = new(std::nothrow) char[size]) == NULL) {
+			return;
+		}
+	}
+	fprintf(stderr, "[ERR] %s:%d:%d  %s", st->fileName.back().c_str(), st->row.back(), st->col.back(), p);
+	delete[] p;
+	fprintf(stderr, "\n");
+}
+
+static unsigned int str_to_uint(SSUStruct * st, const char * str)
 {
 	char * endptr = NULL;
 	unsigned int result;
@@ -47,7 +78,7 @@ static unsigned int str_to_uint(const char * str)
 		result = (unsigned int)strtoul(str, &endptr, 10);
 	if(endptr != NULL && *endptr != 0)
 	{
-		fprintf(stderr, "Wrong number format: %s!\n", str);
+		errorMsg(st, "'%s' Wrong number format!", str);
 		exit(0);
 	}
 	return result;
@@ -99,7 +130,7 @@ static void addEnum(SSUStruct * st)
 	{
 		if(st->enums.find(st->name) != st->enums.end())
 		{
-			fprintf(stderr, "Repeated enum name! %s\n", st->name);
+			fprintf(stderr, "Repeated enum name! %s", st->name);
 			exit(0);
 		}
 	}
@@ -107,7 +138,7 @@ static void addEnum(SSUStruct * st)
 	{
 		if(st->currentStruct->enums.find(st->name) != st->currentStruct->enums.end())
 		{
-			fprintf(stderr, "Repeated enum name! %s\n", st->name);
+			errorMsg(st, "'%s' Repeated enum name!", st->name);
 			exit(0);
 		}
 	}
@@ -137,17 +168,17 @@ static void addEnumVal(SSUStruct * st)
 {
 	if(st->currentEnum == NULL)
 	{
-		fprintf(stderr, "Wrong enum defines!\n");
+		errorMsg(st, "Wrong enum defines!");
 		exit(0);
 	}
 	if(st->currentEnum->vals.find(st->order) != st->currentEnum->vals.end())
 	{
-		fprintf(stderr, "Repeated enum val order! %d\n", st->order);
+		errorMsg(st, "'%d' Repeated enum val order!", st->order);
 		exit(0);
 	}
 	if(st->currentEnum->valMap.find(st->name) != st->currentEnum->valMap.end())
 	{
-		fprintf(stderr, "Repeated enum val name! %s\n", st->name);
+		errorMsg(st, "'%s' Repeated enum val name!", st->name);
 		exit(0);
 	}
 	EnumVal * ev = new EnumVal;
@@ -173,7 +204,7 @@ static void addStruct(SSUStruct * st)
 	}
 	if(repeat)
 	{
-		fprintf(stderr, "Repeated struct name %s!\n", st->name);
+		errorMsg(st, "'%s' Repeated struct name!", st->name);
 		exit(0);
 	}
 	StructDef * sd = new StructDef;
@@ -200,7 +231,7 @@ static void endStruct(SSUStruct * st)
 	printf_debug("End Struct\n");
 	if(st->currentStruct == NULL)
 	{
-		fprintf(stderr, "Wrong struct end!\n");
+		errorMsg(st, "Wrong struct end!");
 		exit(0);
 	}
 	st->currentStruct = st->currentStruct->parent;
@@ -212,7 +243,7 @@ static void appendField(SSUStruct * st)
 	printf_debug("Append field\n");
 	if(st->currentStruct == NULL)
 	{
-		fprintf(stderr, "Wrong field!\n");
+		errorMsg(st, "Wrong field!");
 		exit(0);
 	}
 	if(st->order == 0)
@@ -228,12 +259,12 @@ static void appendField(SSUStruct * st)
 	}
 	else if(st->currentStruct->fields.find(st->order) != st->currentStruct->fields.end())
 	{
-		fprintf(stderr, "Repeated order number %d!\n", st->order);
+		errorMsg(st, "'%d' Repeated order number!", st->order);
 		exit(0);
 	}
 	if(st->currentStruct->fieldMap.find(st->name) != st->currentStruct->fieldMap.end())
 	{
-		fprintf(stderr, "Repeated field name %s!\n", st->name);
+		errorMsg(st, "'%s' Repeated field name !", st->name);
 		exit(0);
 	}
 	if(st->type == TYPE_STRUCT)
@@ -266,7 +297,7 @@ static void appendField(SSUStruct * st)
 		}
 		if(!found)
 		{
-			fprintf(stderr, "Wrong field type %s!\n", st->tname);
+			errorMsg(st, "'%s' Wrong field type!", st->tname);
 			exit(0);
 		}
 	}
@@ -283,15 +314,15 @@ static void appendField(SSUStruct * st)
 	st->currentStruct->fieldMap[st->name] = fd;
 }
 
-void onSyntaxError(SSUStruct * pss)
+void onSyntaxError(SSUStruct * st)
 {
-	fprintf(stderr, "Syntax error! [%s] %d:%d:%s", pss->fileName.back().c_str(), pss->row.back(), pss->col.back(), pss->word.c_str());
+	errorMsg(st, "'%s' Syntax error!", st->word.c_str());
 	exit(0);
 }
 
-void onStackOverflow(SSUStruct * pss)
+void onStackOverflow(SSUStruct * st)
 {
-	fprintf(stderr, "Stack overflow! [%s] %d:%d:%s", pss->fileName.back().c_str(), pss->row.back(), pss->col.back(), pss->word.c_str());
+	errorMsg(st, "'%s' Stack overflow!", st->word.c_str());
 	exit(0);
 }
 
