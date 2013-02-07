@@ -26,6 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "Parser.h"
 #include "Process.h"
 #include <cstdlib>
 
@@ -37,9 +38,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	SSUStruct ssus;
-
-	parse(argv[1], ssus);
+	void * sps = parse(argv[1]);
 
 	FILE * outputFileC = fopen(argv[2], "wt");
 	if(outputFileC == NULL)
@@ -76,11 +75,13 @@ int main(int argc, char *argv[])
 	fprintf(outputFileC, "#include \"%s\"\n\n", argv[3] + pos);
 	fprintf(outputFileH, "#ifndef %s\n", hprotect);
 	fprintf(outputFileH, "#define %s\n\n", hprotect);
-	process(outputFileC, outputFileH, ssus);
+	process(outputFileC, outputFileH, *parseGetStruct(sps));
 	fprintf(outputFileH, "#endif // %s\n", hprotect);
 
 	fclose(outputFileH);
 	fclose(outputFileC);
+
+	parseFree(sps);
 
 	return 0;
 }

@@ -26,6 +26,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+struct SSUParseStruct;
+void realParse(const char * filename, SSUParseStruct * ssus);
+
 #include "LexUtil.h"
 #include "SsuLex.h"
 #include "SsuLex.c"
@@ -72,20 +75,20 @@ struct TokenAssign
 	{NULL, TK_CUSTOM},
 };
 
-inline void push(void * parser, SSUStruct * ssus)
+inline void push(void * parser, SSUParseStruct * ssus)
 {
 	TokenAssign * assign;
 	for(assign = tokenAssigns; assign->token != NULL; ++ assign)
 	{
-		if(strcmp(assign->token, ssus->word.c_str()) == 0)
+		if(strcmp(assign->token, ssus->ssh.word.c_str()) == 0)
 		{
-			printf_debug("%s %d\n", ssus->word.c_str(), assign->id);
-			ssuParser(parser, assign->id, strdup(ssus->word.c_str()), ssus);
+			printf_debug("%s %d\n", ssus->ssh.word.c_str(), assign->id);
+			ssuParser(parser, assign->id, strdup(ssus->ssh.word.c_str()), ssus);
 			return;
 		}
 	}
-	printf_debug("%s\n", ssus->word.c_str());
-	ssuParser(parser, TK_CUSTOM, strdup(ssus->word.c_str()), ssus);
+	printf_debug("%s\n", ssus->ssh.word.c_str());
+	ssuParser(parser, TK_CUSTOM, strdup(ssus->ssh.word.c_str()), ssus);
 }
 
 inline int typeFromChar(unsigned char v)
@@ -140,19 +143,19 @@ static char * extractComment(char * s, int& err)
 #define PUSH_LASTTOKEN \
 	if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) \
 	{ \
-		ssus.col.back() = sstart - s + 1; \
-		ssus.word.assign(sstart, scurrent); \
-		push(parser, &ssus); \
+		ssus->ssh.col.back() = sstart - s + 1; \
+		ssus->ssh.word.assign(sstart, scurrent); \
+		push(parser, ssus); \
 	}
 
-
-void parse(const char * filename, SSUStruct& ssus)
+void realParse(const char * filename, SSUParseStruct * ssus)
 {
 	void * parser = ssuParserAlloc(malloc);
 	FILE * f = fopen(filename, "rt");
-	ssus.fileName.push_back(filename);
-	ssus.row.push_back(0);
-	ssus.col.push_back(0);
+
+	ssus->ssh.fileName.push_back(filename);
+	ssus->ssh.row.push_back(0);
+	ssus->ssh.col.push_back(0);
 	int lineNo = 0;
 	while(!feof(f))
 	{
@@ -160,7 +163,7 @@ void parse(const char * filename, SSUStruct& ssus)
 		++ lineNo;
 		if(fgets(s, 4096, f) == NULL)
 			continue;
-		++ ssus.row.back();
+		++ ssus->ssh.row.back();
 		size_t len = strlen(s);
 		if(len == 0)
 			continue;
@@ -178,7 +181,7 @@ void parse(const char * filename, SSUStruct& ssus)
 			exit(0);
 		}
 		if(cmt != NULL)
-			ssuParser(parser, TK_COMMENT, strdup(cmt), &ssus);
+			ssuParser(parser, TK_COMMENT, strdup(cmt), ssus);
 		char * sstart = s;
 		char * scurrent = s;
 		bool nextLine = false;
@@ -213,7 +216,7 @@ void parse(const char * filename, SSUStruct& ssus)
 					sstart = scurrent + 1;
 					scurrent = strchr(sstart, *scurrent);
 					std::string tmpStr2(sstart, scurrent);
-					ssuParser(parser, TK_CUSTOM, strdup(tmpStr2.c_str()), &ssus);
+					ssuParser(parser, TK_CUSTOM, strdup(tmpStr2.c_str()), ssus);
 					sstart = scurrent + 1;
 				}
 				break;
@@ -222,14 +225,14 @@ void parse(const char * filename, SSUStruct& ssus)
 				if(charId != currentCharId)
 				{
 					PUSH_LASTTOKEN
-					currentCharId = charId;
+						currentCharId = charId;
 					sstart = scurrent;
 				}
 				if(charId == 0)
 				{
-					ssus.col.back() = scurrent - s + 1;
-					ssus.word = *scurrent;
-					push(parser, &ssus);
+					ssus->ssh.col.back() = scurrent - s + 1;
+					ssus->ssh.word = *scurrent;
+					push(parser, ssus);
 					sstart = scurrent + 1;
 				}
 				break;
@@ -241,9 +244,26 @@ void parse(const char * filename, SSUStruct& ssus)
 	}
 	fclose(f);
 
-	ssuParser(parser, 0, NULL, &ssus);
+	ssuParser(parser, 0, NULL, ssus);
 	ssuParserFree(parser, free);
-	ssus.fileName.erase(ssus.fileName.end() - 1);
-	ssus.row.erase(ssus.row.end() - 1);
-	ssus.col.erase(ssus.col.end() - 1);
+	ssus->ssh.fileName.erase(ssus->ssh.fileName.end() - 1);
+	ssus->ssh.row.erase(ssus->ssh.row.end() - 1);
+	ssus->ssh.col.erase(ssus->ssh.col.end() - 1);
+}
+
+DLLSPEC void * parse(const char * filename)
+{
+	SSUParseStruct * ssus = new SSUParseStruct;
+	realParse(filename, ssus);
+	return ssus;
+}
+
+DLLSPEC SSUStruct * parseGetStruct( void * ssus )
+{
+	return &((SSUParseStruct *)ssus)->ss;
+}
+
+DLLSPEC void parseFree( void * ssus )
+{
+	delete (SSUParseStruct *)ssus;
 }

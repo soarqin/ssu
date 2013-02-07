@@ -39,7 +39,8 @@ solution "ssu"
         targetdir "bin/release"
 
     include "lemon"
-    include "SsuGen"
+    include "SsuParse"
+    include "SsuCpp"
 
 --  Used for compare with protobuf results only!
 --  include "test"
