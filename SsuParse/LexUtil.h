@@ -144,7 +144,7 @@ static void importFile(SSUParseStruct * pss, const char * fname)
 			}
 		}
 	}
-	printf_debug("import %s\n");
+	printf_debug("import %s\n", fname);
 	realParse(fname, pss);
 }
 

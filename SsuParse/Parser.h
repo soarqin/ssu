@@ -34,6 +34,8 @@
 #else
 #define DLLSPEC __declspec(dllimport)
 #endif
+#else
+#define DLLSPEC
 #endif
 
 extern DLLSPEC void * parse(const char * filename);
