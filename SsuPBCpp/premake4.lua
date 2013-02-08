@@ -1,8 +1,8 @@
-project "SsuCpp"
+project "SsuPBCpp"
     language "C++"
     kind "ConsoleApp"
 
-    files { "Process.*", "SsuGen.cpp", "SsuStruct.h" }
+    files { "**.cpp", "**.h" }
     includedirs { "../SsuParse" }
     links { "SsuParse" }
 

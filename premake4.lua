@@ -40,7 +40,7 @@ solution "ssu"
 
     include "lemon"
     include "SsuParse"
-    include "SsuCpp"
+    include "SsuPBCpp"
 
 --  Used for compare with protobuf results only!
 --  include "test"
