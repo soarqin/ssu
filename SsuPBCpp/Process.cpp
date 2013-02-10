@@ -116,9 +116,9 @@ inline size_t sizeUInt32( unsigned int val )
 
 void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::string& cstr, std::string& dstr, std::string& pkstr, std::string& upkstr, std::string& sstr, int constraint, int oorder, int order, int typeId, const std::string& tname, const std::string& name, const std::string& defVal, int indent)
 {
-	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "std::string", "bool", "enum", "struct" };
-	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "String", "Bool", "Enum", "Referred" };
-	int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 2, 0, 0, 2};
+	const char * typeName_[] = { "int", "int", "unsigned int", "long long", "long long", "unsigned long long", "float", "double", "int", "long long", "std::string", "bool", "enum", "struct" };
+	const char * funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "Fixed32", "Fixed64", "String", "Bool", "Enum", "Referred" };
+	int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 5, 1, 2, 0, 0, 2};
 	char tmpStr[1024];
 
 	std::string lName = capitalize(name);

@@ -143,6 +143,16 @@ namespace ssu
 			return sizeof(double);
 		}
 
+		static inline size_t sizeFixed32( long long val )
+		{
+			return 4;
+		}
+
+		static inline size_t sizeFixed64( long long val )
+		{
+			return 8;
+		}
+
 		static inline size_t sizeBool( bool val )
 		{
 			return 1;
@@ -258,6 +268,16 @@ namespace ssu
 			return packBinary(buf, &val, sizeof(double));
 		}
 
+		static inline unsigned char * packFixed32( unsigned char * buf, int val )
+		{
+			return packBinary(buf, &val, 4);
+		}
+
+		static inline unsigned char * packFixed64( unsigned char * buf, long long val )
+		{
+			return packBinary(buf, &val, 8);
+		}
+
 		static inline unsigned char * packBool( unsigned char * buf, bool val )
 		{
 			*buf = val ? 1 : 0;
@@ -358,6 +378,18 @@ namespace ssu
 		{
 			buf = packTag(buf, id, 1);
 			return packDouble(buf, val);
+		}
+
+		static inline unsigned char * packFixed32Tag( unsigned char * buf, int val )
+		{
+			buf = packTag(buf, id, 5);
+			return packFixed32(buf, val);
+		}
+
+		static inline unsigned char * packFixed32Tag( unsigned char * buf, long long val )
+		{
+			buf = packTag(buf, id, 1);
+			return packFixed64(buf, val);
 		}
 
 		static inline unsigned char * packBoolTag( unsigned char * buf, unsigned int id, bool val )
@@ -517,6 +549,18 @@ namespace ssu
 		static inline bool unpackDouble( const unsigned char *& buf, size_t& leftSize, double& val )
 		{
 			return unpackBinary(buf, leftSize, &val, sizeof(double));
+		}
+
+		static inline bool unpackFixed32( const unsigned char *& buf, size_t& leftSize, int& val )
+		{
+			val = 0;
+			return unpackBinary(buf, leftSize, &val, 4);
+		}
+
+		static inline bool unpackFixed64( const unsigned char *& buf, size_t& leftSize, long long& val )
+		{
+			val = 0;
+			return unpackBinary(buf, leftSize, &val, 8);
 		}
 
 		static inline bool unpackBool( const unsigned char *& buf, size_t& leftSize, bool& val )
