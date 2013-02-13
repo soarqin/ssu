@@ -380,13 +380,13 @@ namespace ssu
 			return packDouble(buf, val);
 		}
 
-		static inline unsigned char * packFixed32Tag( unsigned char * buf, int val )
+		static inline unsigned char * packFixed32Tag( unsigned char * buf, unsigned int id, int val )
 		{
 			buf = packTag(buf, id, 5);
 			return packFixed32(buf, val);
 		}
 
-		static inline unsigned char * packFixed32Tag( unsigned char * buf, long long val )
+		static inline unsigned char * packFixed32Tag( unsigned char * buf, unsigned int id, long long val )
 		{
 			buf = packTag(buf, id, 1);
 			return packFixed64(buf, val);
