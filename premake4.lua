@@ -24,6 +24,7 @@ solution "ssu"
         buildoptions { "-Wall", "-fexceptions", "-fno-strict-aliasing", "-Wno-multichar" }
     configuration {"not vs*", "windows"}
         buildoptions { "-static-libgcc" }
+        linkoptions { "-static-libgcc" }
 
     configuration "Debug"
         flags "Symbols"

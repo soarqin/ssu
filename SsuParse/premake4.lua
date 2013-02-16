@@ -8,6 +8,9 @@ project "SsuParse"
 
     configuration { "not vs*" }
         buildoptions { "-std=gnu++0x" }
+    configuration { "not vs*", "windows" }
+        buildoptions { "-static-libstdc++" }
+        linkoptions { "-static-libstdc++" }
     configuration { "windows" }
         defines { "BUILD_EXPORT" }
     configuration { "Debug" }
