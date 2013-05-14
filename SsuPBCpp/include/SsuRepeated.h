@@ -43,7 +43,18 @@ public:
 	typedef const T* const_iterator;
 public:
 	inline RepeatedObject<T>(): _objs(_initObj), _size(0), _capacity(_initSize) {}
-	~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
+	inline RepeatedObject<T>(const RepeatedObject<T>& other)
+	{
+		_size = other._size;
+		_capacity = other._capacity;
+		if(other._initObj != other._objs)
+			_objs = new T[_capacity];
+		else
+			_objs = _initObj;
+		if(_size > 0)
+			memcpy(_objs, other._objs, sizeof(T) * _size);
+	}
+	inline ~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
 	inline const T& operator[](size_t idx) const { return _objs[idx]; }
 	inline T& operator[](size_t idx) { return _objs[idx]; }
 	inline void reserve(size_t newsize)
