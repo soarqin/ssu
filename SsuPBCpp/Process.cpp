@@ -346,8 +346,8 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
       fprintIndent(indent + indentSize, outputFileH, "virtual ~%s() { }\n\n", (*it)->name.c_str());
     }
     fprintIndent(indent + 1, outputFileH, "public:\n");
-    fprintIndent(indent + indentSize, outputFileH, "virtual unsigned char * PackBuffer(unsigned char * buf);\n");
-    fprintIndent(indent + indentSize, outputFileH, "virtual bool UnpackBuffer(const unsigned char *& buf, size_t& leftSize);\n");
+    fprintIndent(indent + indentSize, outputFileH, "virtual uint8_t * PackBuffer(uint8_t * buf);\n");
+    fprintIndent(indent + indentSize, outputFileH, "virtual bool UnpackBuffer(const uint8_t *& buf, size_t& leftSize);\n");
     fprintIndent(indent + indentSize, outputFileH, "virtual size_t Size() const;\n\n");
     if(!publicString.empty()) {
       fprintIndent(indent + 1, outputFileH, "public:\n");
@@ -364,13 +364,13 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
     fprintf(outputFileH, "\n");
     fprintIndent(indent, outputFileH, "};\n\n");
 
-    fprintIndent(0, outputFileC, "unsigned char * %s%s::PackBuffer(unsigned char * buf) {\n", parent.c_str(), (*it)->name.c_str());
+    fprintIndent(0, outputFileC, "uint8_t * %s%s::PackBuffer(uint8_t * buf) {\n", parent.c_str(), (*it)->name.c_str());
     fputs(packString.c_str(), outputFileC);
     fprintIndent(indentSize, outputFileC, "return buf;\n");
     fprintIndent(0, outputFileC, "}\n\n");
-    fprintIndent(0, outputFileC, "bool %s%s::UnpackBuffer(const unsigned char *& buf, size_t& leftSize) {\n", parent.c_str(), (*it)->name.c_str());
+    fprintIndent(0, outputFileC, "bool %s%s::UnpackBuffer(const uint8_t *& buf, size_t& leftSize) {\n", parent.c_str(), (*it)->name.c_str());
     if(!unpackString.empty()) {
-      fprintIndent(indentSize, outputFileC, "uint32_t tag_; unsigned char type_;\n");
+      fprintIndent(indentSize, outputFileC, "uint32_t tag_; uint8_t type_;\n");
       fprintIndent(indentSize, outputFileC, "while(leftSize > 0) {\n");
       fprintIndent(indentSize * 2, outputFileC, "if(!::Ssu::Utils::UnpackTag(buf, leftSize, tag_, type_)) return false;\n");
       fprintIndent(indentSize * 2, outputFileC, "switch(tag_) {\n");

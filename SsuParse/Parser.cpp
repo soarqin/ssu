@@ -53,7 +53,7 @@ inline void push(void * parser, SSUParseStruct * ssus) {
   ssuParser(parser, TK_CUSTOM, strdup(ssus->ssh.word.c_str()), ssus);
 }
 
-inline int typeFromChar(unsigned char v) {
+inline int typeFromChar(uint8_t v) {
   const int cTable[256] = {
     //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
     9, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 0, 0, 9, 0, 0, // 0
