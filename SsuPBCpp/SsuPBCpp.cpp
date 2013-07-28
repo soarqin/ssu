@@ -30,58 +30,53 @@
 #include "Process.h"
 #include <cstdlib>
 
-int main(int argc, char *argv[])
-{
-	if(argc < 4)
-	{
-		fprintf(stderr, "Usage: ssuParser <input file> <cpp source file name> <header file name>\n");
-		return 0;
-	}
+int main(int argc, char *argv[]) {
+  if(argc < 4) {
+    fprintf(stderr, "Usage: ssuParser <input file> <cpp source file name> <header file name>\n");
+    return 0;
+  }
 
-	void * sps = parse(argv[1]);
+  void * sps = parse(argv[1]);
 
-	FILE * outputFileC = fopen(argv[2], "wt");
-	if(outputFileC == NULL)
-	{
-		fprintf(stderr, "Error write to target file!\n");
-		exit(0);
-		return 0;
-	}
+  FILE * outputFileC = fopen(argv[2], "wt");
+  if(outputFileC == NULL) {
+    fprintf(stderr, "Error write to target file!\n");
+    exit(0);
+    return 0;
+  }
 
-	FILE * outputFileH = fopen(argv[3], "wt");
-	if(outputFileH == NULL)
-	{
-		fprintf(stderr, "Error write to target file!\n");
-		exit(0);
-		return 0;
-	}
+  FILE * outputFileH = fopen(argv[3], "wt");
+  if(outputFileH == NULL) {
+    fprintf(stderr, "Error write to target file!\n");
+    exit(0);
+    return 0;
+  }
 
-	int pos = (int)strlen(argv[3]) - 1;
-	while(pos >= 0 && argv[3][pos] != '/' && argv[3][pos] != '\\') -- pos;
-	++ pos;
+  int pos = (int)strlen(argv[3]) - 1;
+  while(pos >= 0 && argv[3][pos] != '/' && argv[3][pos] != '\\') -- pos;
+  ++ pos;
 
-	char hprotect[4096] = "_SSU_";
-	strcpy(hprotect + 5, argv[3] + pos);
-	size_t len = strlen(hprotect);
-	for(size_t i = 5; i < len; ++ i)
-	{
-		if(hprotect[i] >= 'a' && hprotect[i] <= 'z')
-			hprotect[i] -= 32;
-		else if(!((hprotect[i] >= '0' && hprotect[i] <= '9') || (hprotect[i] >= 'A' && hprotect[i] <= 'Z')))
-			hprotect[i] = '_';
-	}
-	strcat(hprotect, "_");
+  char hprotect[4096] = "_SSU_";
+  strcpy(hprotect + 5, argv[3] + pos);
+  size_t len = strlen(hprotect);
+  for(size_t i = 5; i < len; ++ i) {
+    if(hprotect[i] >= 'a' && hprotect[i] <= 'z')
+      hprotect[i] -= 32;
+    else if(!((hprotect[i] >= '0' && hprotect[i] <= '9') || (hprotect[i] >= 'A' && hprotect[i] <= 'Z')))
+      hprotect[i] = '_';
+  }
+  strcat(hprotect, "_");
 
-	fprintf(outputFileC, "#include \"%s\"\n\n", argv[3] + pos);
-	fprintf(outputFileH, "#ifndef %s\n", hprotect);
-	fprintf(outputFileH, "#define %s\n\n", hprotect);
-	process(outputFileC, outputFileH, *parseGetStruct(sps));
-	fprintf(outputFileH, "#endif // %s\n", hprotect);
+  fprintf(outputFileC, "#include \"%s\"\n\n", argv[3] + pos);
+  fprintf(outputFileH, "#ifndef %s\n", hprotect);
+  fprintf(outputFileH, "#define %s\n\n", hprotect);
+  process(outputFileC, outputFileH, *parseGetStruct(sps));
+  fprintf(outputFileH, "#endif // %s\n", hprotect);
 
-	fclose(outputFileH);
-	fclose(outputFileC);
+  fclose(outputFileH);
+  fclose(outputFileC);
 
-	parseFree(sps);
+  parseFree(sps);
 
-	return 0;
+  return 0;
 }

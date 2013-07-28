@@ -33,241 +33,178 @@ void realParse(const char * filename, SSUParseStruct * ssus);
 #include "SsuLex.h"
 #include "SsuLex.c"
 
-struct TokenAssign
-{
-	const char * token;
-	int id;
-} tokenAssigns[] =
-{
-	{"struct", TK_STRUCT},
-	{"message", TK_STRUCT},
-	{"class", TK_STRUCT},
-	{"enum", TK_ENUM},
-	{"option", TK_OPTION},
-	{"package", TK_PACKAGE},
-	{"import", TK_IMPORT},
-	{"{", TK_LBRACE},
-	{"}", TK_RBRACE},
-	{"[", TK_LSBRACKET},
-	{"]", TK_RSBRACKET},
-	{",", TK_COMMA},
-	{"=", TK_ASSIGN},
-	{";", TK_DELIM},
-	{"required", TK_REQUIRED},
-	{"optional", TK_OPTIONAL},
-	{"repeated", TK_REPEATED},
-	{"ordermap", TK_ORDERMAP},
-	{"int", TK_INTEGER},
-	{"sint", TK_SINTEGER},
-	{"uint", TK_UINTEGER},
-	{"int32", TK_INTEGER},
-	{"sint32", TK_SINTEGER},
-	{"uint32", TK_UINTEGER},
-	{"int64", TK_INTEGER64},
-	{"sint64", TK_SINTEGER64},
-	{"uint64", TK_UINTEGER64},
-	{"float", TK_FLOAT},
-	{"double", TK_DOUBLE},
-	{"fixed32", TK_FIXED32},
-	{"sfixed32", TK_FIXED32},
-	{"fixed64", TK_FIXED64},
-	{"sfixed64", TK_FIXED64},
-	{"string", TK_STRING},
-	{"bool", TK_BOOL},
-	{"default", TK_DEFAULT},
-	{"packed", TK_PACKED},
-	{NULL, TK_CUSTOM},
+struct TokenAssign {
+  const char * token;
+  int id;
+} tokenAssigns[] = {
+  {"struct", TK_STRUCT}, {"message", TK_STRUCT}, {"class", TK_STRUCT}, {"enum", TK_ENUM}, {"option", TK_OPTION}, {"package", TK_PACKAGE}, {"import", TK_IMPORT}, {"{", TK_LBRACE}, {"}", TK_RBRACE}, {"[", TK_LSBRACKET}, {"]", TK_RSBRACKET}, {",", TK_COMMA}, {"=", TK_ASSIGN}, {";", TK_DELIM}, {"required", TK_REQUIRED}, {"optional", TK_OPTIONAL}, {"repeated", TK_REPEATED}, {"ordermap", TK_ORDERMAP}, {"int", TK_INTEGER}, {"sint", TK_SINTEGER}, {"uint", TK_UINTEGER}, {"int32", TK_INTEGER}, {"sint32", TK_SINTEGER}, {"uint32", TK_UINTEGER}, {"int64", TK_INTEGER64}, {"sint64", TK_SINTEGER64}, {"uint64", TK_UINTEGER64}, {"float", TK_FLOAT}, {"double", TK_DOUBLE}, {"fixed32", TK_FIXED32}, {"sfixed32", TK_FIXED32}, {"fixed64", TK_FIXED64}, {"sfixed64", TK_FIXED64}, {"string", TK_STRING}, {"bool", TK_BOOL}, {"default", TK_DEFAULT}, {"packed", TK_PACKED}, {NULL, TK_CUSTOM},
 };
 
-inline void push(void * parser, SSUParseStruct * ssus)
-{
-	TokenAssign * assign;
-	for(assign = tokenAssigns; assign->token != NULL; ++ assign)
-	{
-		if(strcmp(assign->token, ssus->ssh.word.c_str()) == 0)
-		{
-			printf_debug("%s %d\n", ssus->ssh.word.c_str(), assign->id);
-			ssuParser(parser, assign->id, strdup(ssus->ssh.word.c_str()), ssus);
-			return;
-		}
-	}
-	printf_debug("%s\n", ssus->ssh.word.c_str());
-	ssuParser(parser, TK_CUSTOM, strdup(ssus->ssh.word.c_str()), ssus);
+inline void push(void * parser, SSUParseStruct * ssus) {
+  TokenAssign * assign;
+  for(assign = tokenAssigns; assign->token != NULL; ++ assign) {
+    if(strcmp(assign->token, ssus->ssh.word.c_str()) == 0) {
+      printf_debug("%s %d\n", ssus->ssh.word.c_str(), assign->id);
+      ssuParser(parser, assign->id, strdup(ssus->ssh.word.c_str()), ssus);
+      return;
+    }
+  }
+  printf_debug("%s\n", ssus->ssh.word.c_str());
+  ssuParser(parser, TK_CUSTOM, strdup(ssus->ssh.word.c_str()), ssus);
 }
 
-inline int typeFromChar(unsigned char v)
-{
-	const int cTable[256] = {
-		//  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
-		9, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 0, 0, 9, 0, 0, // 0
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1
-		8, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1, 1, 0, // 2
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 3
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 4
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 5
-		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 6
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, // 7
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 8
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 9
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F
-	};
-	return cTable[v];
+inline int typeFromChar(unsigned char v) {
+  const int cTable[256] = {
+    //  0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+    9, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 0, 0, 9, 0, 0, // 0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 1
+    8, 0, 7, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1, 1, 0, // 2
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 3
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 4
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 5
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 6
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, // 7
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 8
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 9
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // A
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // B
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // C
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // D
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // E
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // F
+  };
+  return cTable[v];
 }
 
-static char * extractComment(char * s, int& err)
-{
-	err = 0;
-	char *p = s;
-	while(*p != 0)
-	{
-		if(*p == '\'' || *p == '"')
-		{
-			p = strchr(p + 1, *p);
-			if(p == NULL)
-			{
-				err = 1;
-				return NULL;
-			}
-		}
-		else if(*p == '/' && *(p + 1) == '/')
-		{
-			*p = 0;
-			return p + 2;
-		}
-		++ p;
-	}
-	return NULL;
+static char * extractComment(char * s, int& err) {
+  err = 0;
+  char *p = s;
+  while(*p != 0) {
+    if(*p == '\'' || *p == '"') {
+      p = strchr(p + 1, *p);
+      if(p == NULL) {
+        err = 1;
+        return NULL;
+      }
+    }
+    else if(*p == '/' && *(p + 1) == '/') {
+      *p = 0;
+      return p + 2;
+    }
+    ++ p;
+  }
+  return NULL;
 }
 
 #define PUSH_LASTTOKEN \
-	if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) \
-	{ \
-		ssus->ssh.col.back() = sstart - s + 1; \
-		ssus->ssh.word.assign(sstart, scurrent); \
-		push(parser, ssus); \
-	}
+  if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) \ { \
+    ssus->ssh.col.back() = sstart - s + 1; \
+    ssus->ssh.word.assign(sstart, scurrent); \
+    push(parser, ssus); \
+  }
 
-void realParse(const char * filename, SSUParseStruct * ssus)
-{
-	void * parser = ssuParserAlloc(malloc);
-	FILE * f = fopen(filename, "rt");
+void realParse(const char * filename, SSUParseStruct * ssus) {
+  void * parser = ssuParserAlloc(malloc);
+  FILE * f = fopen(filename, "rt");
 
-	ssus->ssh.fileName.push_back(filename);
-	ssus->ssh.row.push_back(0);
-	ssus->ssh.col.push_back(0);
-	int lineNo = 0;
-	while(!feof(f))
-	{
-		char s[4096];
-		++ lineNo;
-		if(fgets(s, 4096, f) == NULL)
-			continue;
-		++ ssus->ssh.row.back();
-		size_t len = strlen(s);
-		if(len == 0)
-			continue;
-		int i = (int)len - 1;
-		while(i >= 0 && typeFromChar(s[i]) == 9)
-			-- i;
-		if(i < 0)
-			continue;
-		s[i + 1] = 0;
-		int err = 0;
-		char * cmt = extractComment(s, err);
-		if(err)
-		{
-			fprintf(stderr, "[%s] %d:1  Unpaired quotes!", filename, lineNo);
-			exit(0);
-		}
-		if(cmt != NULL)
-			ssuParser(parser, TK_COMMENT, strdup(cmt), ssus);
-		char * sstart = s;
-		char * scurrent = s;
-		bool nextLine = false;
-		int currentCharId = -1;
-		while(!nextLine)
-		{
-			int charId = typeFromChar(*scurrent);
-			switch(charId)
-			{
-			case 9:
-				if(scurrent != sstart)
-				{
-					PUSH_LASTTOKEN;
-				}
-				nextLine = true;
-				break;
-			case 8:
-				{
-					PUSH_LASTTOKEN;
-					do
-					{
-						++ scurrent;
-					}
-					while(typeFromChar(*scurrent) == 8);
-					sstart = scurrent;
-					currentCharId = -1;
-					continue;
-				}
-			case 7:
-				{
-					PUSH_LASTTOKEN;
-					sstart = scurrent + 1;
-					scurrent = strchr(sstart, *scurrent);
-					std::string tmpStr2(sstart, scurrent);
-					ssuParser(parser, TK_CUSTOM, strdup(tmpStr2.c_str()), ssus);
-					sstart = scurrent + 1;
-				}
-				break;
-			case 1:
-			case 0:
-				if(charId != currentCharId)
-				{
-					PUSH_LASTTOKEN
-						currentCharId = charId;
-					sstart = scurrent;
-				}
-				if(charId == 0)
-				{
-					ssus->ssh.col.back() = scurrent - s + 1;
-					ssus->ssh.word = *scurrent;
-					push(parser, ssus);
-					sstart = scurrent + 1;
-				}
-				break;
-			}
-			if(nextLine)
-				break;
-			++ scurrent;
-		}
-	}
-	fclose(f);
+  ssus->ssh.fileName.push_back(filename);
+  ssus->ssh.row.push_back(0);
+  ssus->ssh.col.push_back(0);
+  int lineNo = 0;
+  while(!feof(f)) {
+    char s[4096];
+    ++ lineNo;
+    if(fgets(s, 4096, f) == NULL)
+      continue;
+    ++ ssus->ssh.row.back();
+    size_t len = strlen(s);
+    if(len == 0)
+      continue;
+    int i = (int)len - 1;
+    while(i >= 0 && typeFromChar(s[i]) == 9)
+      -- i;
+    if(i < 0)
+      continue;
+    s[i + 1] = 0;
+    int err = 0;
+    char * cmt = extractComment(s, err);
+    if(err) {
+      fprintf(stderr, "[%s] %d:1  Unpaired quotes!", filename, lineNo);
+      exit(0);
+    }
+    if(cmt != NULL)
+      ssuParser(parser, TK_COMMENT, strdup(cmt), ssus);
+    char * sstart = s;
+    char * scurrent = s;
+    bool nextLine = false;
+    int currentCharId = -1;
+    while(!nextLine) {
+      int charId = typeFromChar(*scurrent);
+      switch(charId) {
+      case 9:
+        if(scurrent != sstart) {
+          PUSH_LASTTOKEN;
+        }
+        nextLine = true;
+        break;
+      case 8: {
+          PUSH_LASTTOKEN;
+          do {
+            ++ scurrent;
+          }
+          while(typeFromChar(*scurrent) == 8);
+          sstart = scurrent;
+          currentCharId = -1;
+          continue;
+        }
+      case 7: {
+          PUSH_LASTTOKEN;
+          sstart = scurrent + 1;
+          scurrent = strchr(sstart, *scurrent);
+          std::string tmpStr2(sstart, scurrent);
+          ssuParser(parser, TK_CUSTOM, strdup(tmpStr2.c_str()), ssus);
+          sstart = scurrent + 1;
+        }
+        break;
+      case 1:
+      case 0:
+        if(charId != currentCharId) {
+          PUSH_LASTTOKEN
+            currentCharId = charId;
+          sstart = scurrent;
+        }
+        if(charId == 0) {
+          ssus->ssh.col.back() = scurrent - s + 1;
+          ssus->ssh.word = *scurrent;
+          push(parser, ssus);
+          sstart = scurrent + 1;
+        }
+        break;
+      }
+      if(nextLine)
+        break;
+      ++ scurrent;
+    }
+  }
+  fclose(f);
 
-	ssuParser(parser, 0, NULL, ssus);
-	ssuParserFree(parser, free);
-	ssus->ssh.fileName.erase(ssus->ssh.fileName.end() - 1);
-	ssus->ssh.row.erase(ssus->ssh.row.end() - 1);
-	ssus->ssh.col.erase(ssus->ssh.col.end() - 1);
+  ssuParser(parser, 0, NULL, ssus);
+  ssuParserFree(parser, free);
+  ssus->ssh.fileName.erase(ssus->ssh.fileName.end() - 1);
+  ssus->ssh.row.erase(ssus->ssh.row.end() - 1);
+  ssus->ssh.col.erase(ssus->ssh.col.end() - 1);
 }
 
-DLLSPEC void * parse(const char * filename)
-{
-	SSUParseStruct * ssus = new SSUParseStruct;
-	realParse(filename, ssus);
-	return ssus;
+DLLSPEC void * parse(const char * filename) {
+  SSUParseStruct * ssus = new SSUParseStruct;
+  realParse(filename, ssus);
+  return ssus;
 }
 
-DLLSPEC SSUStruct * parseGetStruct( void * ssus )
-{
-	return &((SSUParseStruct *)ssus)->ss;
+DLLSPEC SSUStruct * parseGetStruct( void * ssus ) {
+  return &((SSUParseStruct *)ssus)->ss;
 }
 
-DLLSPEC void parseFree( void * ssus )
-{
-	delete (SSUParseStruct *)ssus;
+DLLSPEC void parseFree( void * ssus ) {
+  delete (SSUParseStruct *)ssus;
 }
