@@ -54,7 +54,7 @@ public:
   inline ~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
   inline const T& operator[](size_t idx) const { return _objs[idx]; }
   inline T& operator[](size_t idx) { return _objs[idx]; }
-  inline void reserve(size_t newsize) {
+  inline void Reserve(size_t newsize) {
     if(newsize <= _capacity) return;
     _capacity = std::max(newsize, _capacity * 2);
     T * oldObjs = _objs;
@@ -62,23 +62,23 @@ public:
     memcpy(_objs, oldObjs, sizeof(T) * _size);
     if(oldObjs != _initObj) delete[] oldObjs;
   }
-  inline void add(const T& val) {
+  inline void Add(const T& val) {
     if(_size >= _capacity)
-      reserve(_capacity + 1);
+      Reserve(_capacity + 1);
     _objs[_size ++] = val;
   }
-  inline T& add() {
+  inline T& Add() {
     if(_size >= _capacity)
-      reserve(_capacity + 1);
+      Reserve(_capacity + 1);
     return _objs[_size ++];
   }
-  inline size_t size() const { return _size; }
-  inline size_t capacity() const { return _capacity; }
+  inline size_t Size() const { return _size; }
+  inline size_t Capacity() const { return _capacity; }
   inline iterator begin() { return _objs; }
   inline iterator end() { return _objs + _size; }
   inline const_iterator begin() const { return _objs; }
   inline const_iterator end() const { return _objs + _size; }
-  inline void clear() { if(_objs != _initObj) delete[] _objs; _objs = _initObj; _size = 0; _capacity = _initSize; }
+  inline void Clear() { if(_objs != _initObj) delete[] _objs; _objs = _initObj; _size = 0; _capacity = _initSize; }
 
 private:
   static const int _initSize = 8;

@@ -99,17 +99,17 @@ static void errorMsg(SSUParseStruct * st, const char * str, ...) {
   fprintf(stderr, "\n");
 }
 
-static unsigned int str_to_uint(SSUParseStruct * st, const char * str) {
+static uint32_t str_to_uint(SSUParseStruct * st, const char * str) {
   char * endptr = NULL;
-  unsigned int result;
+  uint32_t result;
   if(str[0] == '0') {
     if(str[1] == 'x' || str[1] == 'X')
-      result = (unsigned int)strtoul(str, &endptr, 16);
+      result = (uint32_t)strtoul(str, &endptr, 16);
     else
-      result = (unsigned int)strtoul(str, &endptr, 8);
+      result = (uint32_t)strtoul(str, &endptr, 8);
   }
   else
-    result = (unsigned int)strtoul(str, &endptr, 10);
+    result = (uint32_t)strtoul(str, &endptr, 10);
   if(endptr != NULL && *endptr != 0) {
     errorMsg(st, "'%s' Wrong number format!", str);
     exit(0);

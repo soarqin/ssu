@@ -97,7 +97,7 @@ static char * extractComment(char * s, int& err) {
 }
 
 #define PUSH_LASTTOKEN \
-  if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) \ { \
+  if((currentCharId == 0 || currentCharId == 1) && sstart != scurrent) { \
     ssus->ssh.col.back() = sstart - s + 1; \
     ssus->ssh.word.assign(sstart, scurrent); \
     push(parser, ssus); \

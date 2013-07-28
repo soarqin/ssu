@@ -1,6 +1,7 @@
 #ifndef _SSUSTRUCT_H_
 #define _SSUSTRUCT_H_
 
+#include <stdint.h>
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -78,14 +79,14 @@ struct StructDef {
   StructDef * parent;
   std::vector<struct StructDef *> structList;
   std::vector<struct EnumDef *> enumList;
-  std::map<unsigned int, struct FieldDef *> fields;
+  std::map<uint32_t, struct FieldDef *> fields;
   std::string comment;
 
   std::map<std::string, struct StructDef *> structs;
   std::map<std::string, struct EnumDef *> enums;
   std::map<std::string, struct FieldDef *> fieldMap;
 
-  unsigned int id;
+  uint32_t id;
 };
 
 struct SSUStruct {
