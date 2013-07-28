@@ -375,7 +375,7 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
       fprintIndent(indentSize * 2, outputFileC, "if(!::Ssu::Utils::UnpackTag(buf, leftSize, tag_, type_)) return false;\n");
       fprintIndent(indentSize * 2, outputFileC, "switch(tag_) {\n");
       fputs(unpackString.c_str(), outputFileC);
-      fprintIndent(indentSize * 2, outputFileC, "default: break;\n");
+      fprintIndent(indentSize * 2 + 1, outputFileC, "default: break;\n");
       fprintIndent(indentSize * 2, outputFileC, "}\n");
       fprintIndent(indentSize, outputFileC, "}\n");
     }
