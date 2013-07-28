@@ -31,7 +31,7 @@
 
 #include <cstdlib>
 
-namespace ssu {
+namespace Ssu {
 
 template<typename T>
 class ReferredObject {
