@@ -287,18 +287,22 @@ std::string alterDefVal(int type, const std::string& str) {
   if(!str.empty())
     return str;
   switch(type) {
-  case TYPE_INT:
-  case TYPE_UINT:
-  case TYPE_INT64:
-  case TYPE_UINT64:
+   case TYPE_INT:
+   case TYPE_SINT:
+   case TYPE_UINT:
+   case TYPE_INT64:
+   case TYPE_SINT64:
+   case TYPE_UINT64:
+   case TYPE_FIXED32:
+   case TYPE_FIXED64:
     return "0";
-  case TYPE_FLOAT:
+   case TYPE_FLOAT:
     return "0.0f";
-  case TYPE_DOUBLE:
+   case TYPE_DOUBLE:
     return "0.0";
-  case TYPE_BOOL:
+   case TYPE_BOOL:
     return "false";
-  default:
+   default:
     break;
   }
   return "";
