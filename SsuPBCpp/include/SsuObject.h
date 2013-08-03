@@ -34,7 +34,7 @@
 #include <string>
 #include "SsuUtils.h"
 
-namespace Ssu {
+namespace ssu {
 
 class Object {
 public:

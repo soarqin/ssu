@@ -32,7 +32,7 @@
 #include <cstdlib>
 #include <vector>
 
-namespace Ssu {
+namespace ssu {
 
 template<typename T>
 class RepeatedObject {

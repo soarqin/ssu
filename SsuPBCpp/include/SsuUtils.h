@@ -33,7 +33,7 @@
 #include "SsuReferred.h"
 #include "SsuRepeated.h"
 
-namespace Ssu {
+namespace ssu {
 
 class Utils {
 public:
