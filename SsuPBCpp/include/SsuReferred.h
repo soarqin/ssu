@@ -40,9 +40,9 @@ public:
   inline ~ReferredObject<T>() { delete _obj; }
   inline operator const T&() const { return *_obj; }
   inline operator T&() { checkObject(); return *_obj; }
-  inline const T * Get() const { return _obj; }
+  inline const T* Get() const { return _obj; }
   inline ReferredObject<T>& operator=(const T& other ) { checkObject(); *_obj = other; return *this; }
-  inline T * GetMutable() { checkObject(); return _obj; }
+  inline T* GetMutable() { checkObject(); return _obj; }
 
 private:
   inline void checkObject() {
@@ -51,7 +51,7 @@ private:
   }
 
 private:
-  T * _obj;
+  T* _obj;
 };
 
 }

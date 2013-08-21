@@ -44,16 +44,16 @@ public:
     if(pktSize > 0) {
       size_t sz = buf.size();
       buf.resize(sz + pktSize);
-      PackBuffer(reinterpret_cast<uint8_t *>(&buf[sz]));
+      PackBuffer(reinterpret_cast<uint8_t*>(&buf[sz]));
     }
   }
-  inline bool Unpack(const void * buffer, size_t length) {
-    const uint8_t * buf = reinterpret_cast<const uint8_t *>(buffer);
+  inline bool Unpack(const void* buffer, size_t length) {
+    const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
     return UnpackBuffer(buf, length);
   }
   virtual size_t Size() const = 0;
-  virtual uint8_t * PackBuffer(uint8_t * buf) = 0;
-  virtual bool UnpackBuffer(const uint8_t *& buf, size_t& leftSize) = 0;
+  virtual uint8_t* PackBuffer(uint8_t* buf) = 0;
+  virtual bool UnpackBuffer(const uint8_t*& buf, size_t& leftSize) = 0;
 };
 
 }

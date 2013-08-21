@@ -57,7 +57,7 @@ public:
   inline void Reserve(size_t newsize) {
     if(newsize <= _capacity) return;
     _capacity = std::max(newsize, _capacity * 2);
-    T * oldObjs = _objs;
+    T* oldObjs = _objs;
     _objs = new T[_capacity];
     memcpy(_objs, oldObjs, sizeof(T) * _size);
     if(oldObjs != _initObj) delete[] oldObjs;
@@ -82,7 +82,7 @@ public:
 
 private:
   static const int _initSize = 8;
-  T * _objs;
+  T* _objs;
   size_t _size;
   size_t _capacity;
   T _initObj[_initSize];
