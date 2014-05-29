@@ -33,11 +33,11 @@
 %extra_argument {SSUParseStruct *sps}
 
 %syntax_error {
-  onSyntaxError(sps);
+    onSyntaxError(sps);
 }
 
 %stack_overflow {
-  onStackOverflow(sps);
+    onStackOverflow(sps);
 }
 
 %name ssuParser
