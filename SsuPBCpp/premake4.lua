@@ -8,6 +8,5 @@ project "SsuPBCpp"
 
     configuration { "not vs*" }
         buildoptions { "-std=gnu++0x" }
-    configuration { "not vs*", "windows" }
-        buildoptions { "-static-libstdc++" }
-        linkoptions { "-static-libstdc++" }
+        buildoptions { "-static-libgcc", "-static-libstdc++" }
+        linkoptions { "-static-libgcc", "-static-libstdc++" }
