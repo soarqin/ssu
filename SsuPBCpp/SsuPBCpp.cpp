@@ -32,20 +32,20 @@
 
 int main(int argc, char *argv[]) {
     if(argc < 4) {
-        fprintf(stderr, "Usage: ssuParser <input file> <cpp source file name> <header file name>\n");
+        fprintf(stderr, "Usage: SsuPBCpp <input file> <cpp source file name> <header file name>\n");
         return 0;
     }
 
-    void * sps = parse(argv[1]);
+    void *sps = parse(argv[1]);
 
-    FILE * outputFileC = fopen(argv[2], "wt");
+    FILE *outputFileC = fopen(argv[2], "wt");
     if(outputFileC == NULL) {
         fprintf(stderr, "Error write to target file!\n");
         exit(0);
         return 0;
     }
 
-    FILE * outputFileH = fopen(argv[3], "wt");
+    FILE *outputFileH = fopen(argv[3], "wt");
     if(outputFileH == NULL) {
         fprintf(stderr, "Error write to target file!\n");
         exit(0);

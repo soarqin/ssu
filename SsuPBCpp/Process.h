@@ -31,6 +31,6 @@
 
 #include "SsuStruct.h"
 
-void process(FILE *, FILE *, SSUStruct&);
+void process(FILE*, FILE*, SSUStruct&);
 
 #endif // _PROCESS_H_

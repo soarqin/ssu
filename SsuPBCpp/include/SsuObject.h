@@ -39,21 +39,21 @@ namespace ssu {
 class Object {
 public:
     template<typename T>
-    inline void Pack(T& buf) {
-        size_t pktSize = Size();
+    inline void pack(T& buf) {
+        size_t pktSize = size();
         if(pktSize > 0) {
             size_t sz = buf.size();
             buf.resize(sz + pktSize);
-            PackBuffer(reinterpret_cast<uint8_t*>(&buf[sz]));
+            packBuffer(reinterpret_cast<uint8_t*>(&buf[sz]));
         }
     }
-    inline bool Unpack(const void* buffer, size_t length) {
+    inline bool unpack(const void* buffer, size_t length) {
         const uint8_t* buf = reinterpret_cast<const uint8_t*>(buffer);
-        return UnpackBuffer(buf, length);
+        return unpackBuffer(buf, length);
     }
-    virtual size_t Size() const = 0;
-    virtual uint8_t* PackBuffer(uint8_t* buf) = 0;
-    virtual bool UnpackBuffer(const uint8_t*& buf, size_t& leftSize) = 0;
+    virtual size_t size() const = 0;
+    virtual uint8_t *packBuffer(uint8_t* buf) = 0;
+    virtual bool unpackBuffer(const uint8_t*& buf, size_t& leftSize) = 0;
 };
 
 }
