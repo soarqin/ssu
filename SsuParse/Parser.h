@@ -28,15 +28,7 @@
 
 #include "SsuStruct.h"
 
-#ifdef _WIN32
-#ifdef BUILD_EXPORT
-#define DLLSPEC __declspec(dllexport)
-#else
-#define DLLSPEC __declspec(dllimport)
-#endif
-#else
 #define DLLSPEC
-#endif
 
 extern DLLSPEC void * parse(const char * filename);
 extern DLLSPEC SSUStruct * parseGetStruct(void *);

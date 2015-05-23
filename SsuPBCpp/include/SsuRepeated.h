@@ -40,8 +40,13 @@ public:
     typedef T* iterator;
     typedef const T* const_iterator;
 public:
-    inline RepeatedObject<T>(): _objs(_initObj), _size(0), _capacity(_initSize) {}
+    inline RepeatedObject<T>(): _objs(_initObj) {}
     inline RepeatedObject<T>(const RepeatedObject<T>& other) {
+        operator=(other);
+    }
+    inline ~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
+    inline RepeatedObject<T>& operator=(const RepeatedObject<T>& other) {
+        if(_objs != _initObj) delete[] _objs;
         _size = other._size;
         _capacity = other._capacity;
         if(other._initObj != other._objs)
@@ -50,8 +55,8 @@ public:
             _objs = _initObj;
         if(_size > 0)
             memcpy(_objs, other._objs, sizeof(T) * _size);
+        return *this;
     }
-    inline ~RepeatedObject<T>() { if(_objs != _initObj) delete[] _objs; }
     inline const T& operator[](size_t idx) const { return _objs[idx]; }
     inline T& operator[](size_t idx) { return _objs[idx]; }
     inline void Reserve(size_t newsize) {
@@ -82,9 +87,9 @@ public:
 
 private:
     static const int _initSize = 8;
-    T* _objs;
-    size_t _size;
-    size_t _capacity;
+    T* _objs = _initObj;
+    size_t _size = 0;
+    size_t _capacity = _initSize;
     T _initObj[_initSize];
 };
 
