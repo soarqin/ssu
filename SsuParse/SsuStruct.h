@@ -21,6 +21,8 @@ enum FieldType {
     TYPE_DOUBLE,
     TYPE_FIXED32,
     TYPE_FIXED64,
+    TYPE_SFIXED32,
+    TYPE_SFIXED64,
     TYPE_STRING,
     TYPE_BOOL,
     TYPE_ENUM,

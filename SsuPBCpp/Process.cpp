@@ -102,9 +102,9 @@ inline size_t sizeUInt32( uint32_t val ) {
 }
 
 void printField(FILE *outputFile, std::string& pstr, std::string& rstr, std::string& cstr, std::string& dstr, std::string& pkstr, std::string& upkstr, std::string& sstr, int constraint, int oorder, int order, int typeId, const std::string& tname, const std::string& name, const std::string& defVal, int indent) {
-    const char *typeName_[] = { "int", "int", "uint32_t", "int64_t", "int64_t", "uint64_t", "float", "double", "int", "int64_t", "std::string", "bool", "enum", "struct" };
-    const char *funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "Fixed32", "Fixed64", "String", "Bool", "Enum", "Referred" };
-    int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 5, 1, 2, 0, 0, 2};
+    const char *typeName_[] = { "int32_t", "int32_t", "uint32_t", "int64_t", "int64_t", "uint64_t", "float", "double", "uint32_t", "uint64_t", "int32_t", "int64_t", "std::string", "bool", "enum", "struct" };
+    const char *funcName_[] = { "Int32", "SInt32", "UInt32", "Int64", "SInt64", "UInt64", "Float", "Double", "Fixed32", "Fixed64", "SFixed32", "SFixed64", "String", "Bool", "Enum", "Referred" };
+    int typeInt_[] = {0, 0, 0, 0, 0, 0, 5, 1, 5, 1, 5, 1, 2, 0, 0, 2};
     char tmpStr[1024];
 
     std::string lName = capitalize(name);
@@ -295,6 +295,8 @@ std::string alterDefVal(int type, const std::string& str) {
      case TYPE_UINT64:
      case TYPE_FIXED32:
      case TYPE_FIXED64:
+     case TYPE_SFIXED32:
+     case TYPE_SFIXED64:
         return "0";
      case TYPE_FLOAT:
         return "0.0f";

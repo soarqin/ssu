@@ -37,13 +37,13 @@ namespace ssu {
 namespace utils {
 
 namespace {
-inline uint32_t zzEncode32( int n ) {
+inline uint32_t zzEncode32( int32_t n ) {
     // Note:    the right-shift must be arithmetic
     return (n << 1) ^ (n >> 31);
 }
 
-inline int zzDecode32( uint32_t n ) {
-    return (n >> 1) ^ -static_cast<int>(n & 1);
+inline int32_t zzDecode32( uint32_t n ) {
+    return (n >> 1) ^ -static_cast<int32_t>(n & 1);
 }
 
 inline uint64_t zzEncode64( int64_t n ) {
@@ -111,13 +111,13 @@ inline size_t sizeUInt64( uint64_t val ) {
     }
 }
 
-inline size_t sizeInt32( int val ) {
+inline size_t sizeInt32( int32_t val ) {
     if(val < 0)
         return sizeUInt64(static_cast<uint64_t>(val));
     return sizeUInt32(static_cast<uint32_t>(val));
 }
 
-inline size_t sizeSInt32( int val ) {
+inline size_t sizeSInt32( int32_t val ) {
     return sizeUInt32(zzEncode32(val));
 }
 
@@ -142,11 +142,19 @@ inline size_t sizeDouble( double val ) {
     return sizeof(double);
 }
 
-inline size_t sizeFixed32( int64_t val ) {
+inline size_t sizeFixed32( uint32_t val ) {
     return 4;
 }
 
-inline size_t sizeFixed64( int64_t val ) {
+inline size_t sizeFixed64( uint64_t val ) {
+    return 8;
+}
+
+inline size_t sizeSFixed32( int32_t val ) {
+    return 4;
+}
+
+inline size_t sizeSFixed64( int64_t val ) {
     return 8;
 }
 
@@ -218,14 +226,14 @@ inline uint8_t *packUInt64( uint8_t *buf, uint64_t val ) {
     return buf;
 }
 
-inline uint8_t *packInt32( uint8_t *buf, int val ) {
+inline uint8_t *packInt32( uint8_t *buf, int32_t val ) {
     if(val < 0)
         return packUInt64(buf, static_cast<uint64_t>(val));
     else
         return packUInt32(buf, static_cast<uint32_t>(val));
 }
 
-inline uint8_t *packSInt32( uint8_t *buf, int val ) {
+inline uint8_t *packSInt32( uint8_t *buf, int32_t val ) {
     return packUInt32(buf, zzEncode32(val));
 }
 
@@ -250,11 +258,19 @@ inline uint8_t *packDouble( uint8_t *buf, double val ) {
     return packBinary(buf, &val, sizeof(double));
 }
 
-inline uint8_t *packFixed32( uint8_t *buf, int val ) {
+inline uint8_t *packFixed32( uint8_t *buf, uint32_t val ) {
     return packBinary(buf, &val, 4);
 }
 
-inline uint8_t *packFixed64( uint8_t *buf, int64_t val ) {
+inline uint8_t *packFixed64( uint8_t *buf, uint64_t val ) {
+    return packBinary(buf, &val, 8);
+}
+
+inline uint8_t *packSFixed32( uint8_t *buf, int32_t val ) {
+    return packBinary(buf, &val, 4);
+}
+
+inline uint8_t *packSFixed64( uint8_t *buf, int64_t val ) {
     return packBinary(buf, &val, 8);
 }
 
@@ -292,12 +308,12 @@ inline uint8_t *packTag( uint8_t *buf, uint32_t id, uint8_t type ) {
     return packUInt32(buf, (id << 3) + type);
 }
 
-inline uint8_t *packInt32Tag( uint8_t *buf, uint32_t id, int val ) {
+inline uint8_t *packInt32Tag( uint8_t *buf, uint32_t id, int32_t val ) {
     buf = packTag(buf, id, 0);
     return packInt32(buf, val);
 }
 
-inline uint8_t *packSInt32Tag( uint8_t *buf, uint32_t id, int val ) {
+inline uint8_t *packSInt32Tag( uint8_t *buf, uint32_t id, int32_t val ) {
     buf = packTag(buf, id, 0);
     return packSInt32(buf, val);
 }
@@ -338,12 +354,22 @@ inline uint8_t *packDoubleTag( uint8_t *buf, uint32_t id, double val ) {
     return packDouble(buf, val);
 }
 
-inline uint8_t *packFixed32Tag( uint8_t *buf, uint32_t id, int val ) {
+inline uint8_t *packFixed32Tag( uint8_t *buf, uint32_t id, uint32_t val ) {
     buf = packTag(buf, id, 5);
     return packFixed32(buf, val);
 }
 
-inline uint8_t *packFixed32Tag( uint8_t *buf, uint32_t id, int64_t val ) {
+inline uint8_t *packFixed64Tag( uint8_t *buf, uint32_t id, uint64_t val ) {
+    buf = packTag(buf, id, 1);
+    return packFixed64(buf, val);
+}
+
+inline uint8_t *packSFixed32Tag( uint8_t *buf, uint32_t id, int32_t val ) {
+    buf = packTag(buf, id, 5);
+    return packFixed32(buf, val);
+}
+
+inline uint8_t *packSFixed64Tag( uint8_t *buf, uint32_t id, int64_t val ) {
     buf = packTag(buf, id, 1);
     return packFixed64(buf, val);
 }
@@ -449,15 +475,15 @@ inline bool unpackUInt64( const uint8_t *&buf, size_t &leftSize, uint64_t& val )
     return true;
 }
 
-inline bool unpackInt32( const uint8_t *&buf, size_t &leftSize, int& val ) {
+inline bool unpackInt32( const uint8_t *&buf, size_t &leftSize, int32_t& val ) {
     uint64_t n = 0;
     if(!unpackUInt64(buf, leftSize, n))
         return false;
-    val = static_cast<int>(n);
+    val = static_cast<int32_t>(n);
     return true;
 }
 
-inline bool unpackSInt32( const uint8_t *&buf, size_t &leftSize, int& val ) {
+inline bool unpackSInt32( const uint8_t *&buf, size_t &leftSize, int32_t& val ) {
     uint32_t n = 0;
     if(!unpackUInt32(buf, leftSize, n))
         return false;
@@ -494,12 +520,22 @@ inline bool unpackDouble( const uint8_t *&buf, size_t &leftSize, double& val ) {
     return unpackBinary(buf, leftSize, &val, sizeof(double));
 }
 
-inline bool unpackFixed32( const uint8_t *&buf, size_t &leftSize, int& val ) {
+inline bool unpackFixed32( const uint8_t *&buf, size_t &leftSize, uint32_t& val ) {
     val = 0;
     return unpackBinary(buf, leftSize, &val, 4);
 }
 
-inline bool unpackFixed64( const uint8_t *&buf, size_t &leftSize, int64_t& val ) {
+inline bool unpackFixed64( const uint8_t *&buf, size_t &leftSize, uint64_t& val ) {
+    val = 0;
+    return unpackBinary(buf, leftSize, &val, 8);
+}
+
+inline bool unpackSFixed32( const uint8_t *&buf, size_t &leftSize, int32_t& val ) {
+    val = 0;
+    return unpackBinary(buf, leftSize, &val, 4);
+}
+
+inline bool unpackSFixed64( const uint8_t *&buf, size_t &leftSize, int64_t& val ) {
     val = 0;
     return unpackBinary(buf, leftSize, &val, 8);
 }

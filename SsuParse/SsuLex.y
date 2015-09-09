@@ -129,6 +129,8 @@ vtype ::= FLOAT. {sps->ssh.type = TYPE_FLOAT; sps->ssh.tname = "";}
 vtype ::= DOUBLE. {sps->ssh.type = TYPE_DOUBLE; sps->ssh.tname = "";}
 vtype ::= FIXED32. {sps->ssh.type = TYPE_FIXED32; sps->ssh.tname = "";}
 vtype ::= FIXED64. {sps->ssh.type = TYPE_FIXED64; sps->ssh.tname = "";}
+vtype ::= SFIXED32. {sps->ssh.type = TYPE_SFIXED32; sps->ssh.tname = "";}
+vtype ::= SFIXED64. {sps->ssh.type = TYPE_SFIXED64; sps->ssh.tname = "";}
 vtype ::= STRING. {sps->ssh.type = TYPE_STRING; sps->ssh.tname = "";}
 vtype ::= BOOL. {sps->ssh.type = TYPE_BOOL; sps->ssh.tname = "";}
 vtype ::= string(A). {sps->ssh.type = TYPE_STRUCT; sps->ssh.tname = A;}
