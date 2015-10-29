@@ -6,7 +6,7 @@ project "SsuPBCpp"
     includedirs { "../SsuParse" }
     links { "SsuParse" }
 
-    configuration { "not vs*" }
+    configuration { "windows", "not vs*" }
         buildoptions { "-std=gnu++0x" }
         buildoptions { "-static-libgcc", "-static-libstdc++" }
         linkoptions { "-static-libgcc", "-static-libstdc++" }
