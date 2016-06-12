@@ -19,6 +19,8 @@ solution "ssu"
         flags "EnableSSE2"
         buildoptions { "-wd4996" }
         defines { "_CRT_SECURE_NO_WARNINGS" }
+    configuration "not vs*"
+        buildoptions { "-std=c++11" }
 
     configuration "not vs*"
         buildoptions { "-Wall", "-fexceptions", "-fno-strict-aliasing", "-Wno-multichar" }
