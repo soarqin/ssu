@@ -158,14 +158,18 @@ void printField(FILE * outputFile, std::string& pstr, std::string& rstr, std::st
             if(useRef) {
                 pstr += sprintIndent(indent, tmpStr, "inline const %s& %s() const { return _%s; }\n", type, uName.c_str(), name.c_str());
                 pstr += sprintIndent(indent, tmpStr, "inline void Set%s(const %s& val__) { _%s = val__; _isSetFlag[%d] |= 0x%02X; }\n", uName.c_str(), type, name.c_str(), order / 32, 1 << (order % 32));
-                if(typeId == TYPE_STRING)
+                if(typeId == TYPE_STRING) {
+                    pstr += sprintIndent(indent, tmpStr, "inline void Unset%s() { _%s.clear(); _isSetFlag[%d] &= ~0x%02X; }\n", uName.c_str(), name.c_str(), order / 32, 1 << (order % 32));
                     pstr += sprintIndent(indent, tmpStr, "inline %s& Mutable%s() { _isSetFlag[%d] |= 0x%02X; return _%s; }\n", type, uName.c_str(), order / 32, 1 << (order % 32), name.c_str());
-                else
-                    pstr += sprintIndent(indent, tmpStr, "inline %s * Mutable%s() { _isSetFlag[%d] |= 0x%02X; return _%s.GetMutable(); }\n", type, uName.c_str(), order / 32, 1 << (order % 32), name.c_str());
+                } else {
+                    pstr += sprintIndent(indent, tmpStr, "inline void Unset%s() { _%s.Unset(); _isSetFlag[%d] &= ~0x%02X; }\n", uName.c_str(), name.c_str(), order / 32, 1 << (order % 32));
+                    pstr += sprintIndent(indent, tmpStr, "inline %s* Mutable%s() { _isSetFlag[%d] |= 0x%02X; return _%s.GetMutable(); }\n", type, uName.c_str(), order / 32, 1 << (order % 32), name.c_str());
+                }
             }
             else {
                 pstr += sprintIndent(indent, tmpStr, "inline %s %s() const { return _%s; }\n", type, uName.c_str(), name.c_str());
                 pstr += sprintIndent(indent, tmpStr, "inline void Set%s(%s val__) { _%s = val__; _isSetFlag[%d] |= 0x%02X; }\n", uName.c_str(), type, name.c_str(), order / 32, 1 << (order % 32));
+                pstr += sprintIndent(indent, tmpStr, "inline void Unset%s() { _%s = %s(); _isSetFlag[%d] &= ~0x%02X; }\n", uName.c_str(), name.c_str(), type, order / 32, 1 << (order % 32));
             }
             pstr += sprintIndent(indent, tmpStr, "inline bool Has%s() const { return (_isSetFlag[%d] & 0x%02X) > 0; }\n", uName.c_str(), order / 32, 1 << (order % 32));
         }
@@ -369,17 +373,19 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
         fprintIndent(indent, outputFileH, "};\n\n");
 
         fprintIndent(0, outputFileC, "uint8_t * %s%s::PackBuffer(uint8_t * buf) {\n", parent.c_str(), (*it)->name.c_str());
+        fprintIndent(indentSize, outputFileC, "(void)buf;\n");
         fputs(packString.c_str(), outputFileC);
         fprintIndent(indentSize, outputFileC, "return buf;\n");
         fprintIndent(0, outputFileC, "}\n\n");
         fprintIndent(0, outputFileC, "bool %s%s::UnpackBuffer(const uint8_t *& buf, size_t& leftSize) {\n", parent.c_str(), (*it)->name.c_str());
+        fprintIndent(indentSize, outputFileC, "(void)buf; (void)leftSize;\n");
         if(!unpackString.empty()) {
             fprintIndent(indentSize, outputFileC, "uint32_t tag_; uint8_t type_;\n");
             fprintIndent(indentSize, outputFileC, "while(leftSize > 0) {\n");
             fprintIndent(indentSize * 2, outputFileC, "if(!::ssu::utils::UnpackTag(buf, leftSize, tag_, type_)) return false;\n");
             fprintIndent(indentSize * 2, outputFileC, "switch(tag_) {\n");
             fputs(unpackString.c_str(), outputFileC);
-            fprintIndent(indentSize * 2 + 1, outputFileC, "default: break;\n");
+            fprintIndent(indentSize * 2, outputFileC, "default: break;\n");
             fprintIndent(indentSize * 2, outputFileC, "}\n");
             fprintIndent(indentSize, outputFileC, "}\n");
         }
