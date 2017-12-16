@@ -64,8 +64,13 @@ public:
         _capacity = std::max(newsize, _capacity * 2);
         T* oldObjs = _objs;
         _objs = new T[_capacity];
-        memcpy(_objs, oldObjs, sizeof(T) * _size);
+        if(_size > 0)
+            memcpy(_objs, oldObjs, sizeof(T) * _size);
         if(oldObjs != _initObj) delete[] oldObjs;
+    }
+    inline void Resize(size_t newsize) {
+        Reserve(newsize);
+        _size = newsize;
     }
     inline void Add(const T& val) {
         if(_size >= _capacity)

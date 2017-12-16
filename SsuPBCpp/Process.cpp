@@ -354,7 +354,7 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
             fprintIndent(indent + indentSize, outputFileH, "virtual ~%s() { }\n\n", (*it)->name.c_str());
         }
         fprintIndent(indent, outputFileH, "public:\n");
-        fprintIndent(indent + indentSize, outputFileH, "virtual uint8_t * PackBuffer(uint8_t * buf);\n");
+        fprintIndent(indent + indentSize, outputFileH, "virtual uint8_t * PackBuffer(uint8_t * buf) const;\n");
         fprintIndent(indent + indentSize, outputFileH, "virtual bool UnpackBuffer(const uint8_t *& buf, size_t& leftSize);\n");
         fprintIndent(indent + indentSize, outputFileH, "virtual size_t Size() const;\n\n");
         if(!publicString.empty()) {
@@ -372,7 +372,7 @@ void printStruct(const std::string& parent, FILE * outputFileC, FILE * outputFil
         fprintf(outputFileH, "\n");
         fprintIndent(indent, outputFileH, "};\n\n");
 
-        fprintIndent(0, outputFileC, "uint8_t * %s%s::PackBuffer(uint8_t * buf) {\n", parent.c_str(), (*it)->name.c_str());
+        fprintIndent(0, outputFileC, "uint8_t * %s%s::PackBuffer(uint8_t * buf) const {\n", parent.c_str(), (*it)->name.c_str());
         fprintIndent(indentSize, outputFileC, "(void)buf;\n");
         fputs(packString.c_str(), outputFileC);
         fprintIndent(indentSize, outputFileC, "return buf;\n");

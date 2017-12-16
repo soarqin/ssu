@@ -134,23 +134,23 @@ inline size_t SizeSInt64( int64_t val ) {
     return SizeUInt64(zzEncode64(val));
 }
 
-inline size_t SizeFloat( float val ) {
+inline size_t SizeFloat( float /*val*/ ) {
     return sizeof(float);
 }
 
-inline size_t SizeDouble( double val ) {
+inline size_t SizeDouble( double /*val*/ ) {
     return sizeof(double);
 }
 
-inline size_t SizeFixed32( int64_t val ) {
+inline size_t SizeFixed32( int64_t /*val*/ ) {
     return 4;
 }
 
-inline size_t SizeFixed64( int64_t val ) {
+inline size_t SizeFixed64( int64_t /*val*/ ) {
     return 8;
 }
 
-inline size_t SizeBool( bool val ) {
+inline size_t SizeBool( bool /*val*/ ) {
     return 1;
 }
 
@@ -163,7 +163,7 @@ inline size_t SizeStringPtr( const std::string* val ) {
     return SizeString(*val);
 }
 
-inline size_t SizeBinary( const void* val, size_t len ) {
+inline size_t SizeBinary( const void* /*val*/, size_t len ) {
     return SizeUInt32(static_cast<uint32_t>(len)) + len;
 }
 
@@ -174,8 +174,8 @@ inline size_t SizeObject(const T* val) {
 }
 
 template<typename T>
-inline size_t SizeReferred(ReferredObject<T>& val) {
-    size_t sz = val.GetMutable()->Size();
+inline size_t SizeReferred(const ReferredObject<T>& val) {
+    size_t sz = val.Get()->Size();
     return SizeUInt32(static_cast<uint32_t>(sz)) + sz;
 }
 
@@ -270,17 +270,17 @@ inline uint8_t* PackString( uint8_t* buf, const std::string& val ) {
 }
 
 template<typename T>
-inline uint8_t* PackObject(uint8_t* buf, T* val) {
+inline uint8_t* PackObject(uint8_t* buf, const T* val) {
     return val->PackBuffer(buf);
 }
 
 template<typename T>
-inline uint8_t* PackReferred(uint8_t* buf, ReferredObject<T>& val) {
-    return PackObject(buf, val.GetMutable());
+inline uint8_t* PackReferred(uint8_t* buf, const ReferredObject<T>& val) {
+    return PackObject(buf, val.Get());
 }
 
 template<typename T, typename F>
-inline uint8_t* PackRepeated(uint8_t* buf, RepeatedObject<T>& val, F func) {
+inline uint8_t* PackRepeated(uint8_t* buf, const RepeatedObject<T>& val, F func) {
     typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
     while(iter != iter_end) {
         buf = func(buf, *(iter ++));
@@ -343,7 +343,7 @@ inline uint8_t* PackFixed32Tag( uint8_t* buf, uint32_t id, int val ) {
     return PackFixed32(buf, val);
 }
 
-inline uint8_t* PackFixed32Tag( uint8_t* buf, uint32_t id, int64_t val ) {
+inline uint8_t* PackFixed64Tag( uint8_t* buf, uint32_t id, int64_t val ) {
     buf = PackTag(buf, id, 1);
     return PackFixed64(buf, val);
 }
@@ -372,20 +372,20 @@ inline uint8_t* PackBinaryTag( uint8_t* buf, uint32_t id, const void* val, size_
 }
 
 template<typename T>
-inline uint8_t* PackObjectTag( uint8_t* buf, uint32_t id, T* val) {
+inline uint8_t* PackObjectTag( uint8_t* buf, uint32_t id, const T* val) {
     buf = PackTag(buf, id, 2);
     buf = PackUInt32(buf, static_cast<uint32_t>(val->Size()));
     return PackObject(buf, val);
 }
 
 template<typename T>
-inline uint8_t* PackReferredTag( uint8_t* buf, uint32_t id, ReferredObject<T>& val) {
-    return PackObjectTag(buf, id, val.GetMutable());
+inline uint8_t* PackReferredTag( uint8_t* buf, uint32_t id, const ReferredObject<T>& val) {
+    return PackObjectTag(buf, id, val.Get());
 }
 
 template<typename T, typename F>
-inline uint8_t* PackRepeatedTag( uint8_t* buf, uint32_t id, RepeatedObject<T>& val, F func ) {
-    typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
+inline uint8_t* PackRepeatedTag( uint8_t* buf, uint32_t id, const RepeatedObject<T>& val, F func ) {
+    typename RepeatedObject<T>::const_iterator iter = val.begin(), iter_end = val.end();
     while(iter != iter_end) {
         buf = func(buf, id, *(iter ++));
     }
@@ -393,10 +393,10 @@ inline uint8_t* PackRepeatedTag( uint8_t* buf, uint32_t id, RepeatedObject<T>& v
 }
 
 template<typename T, typename F, typename SF>
-inline uint8_t* PackRepeatedPackedTag( uint8_t* buf, uint32_t id, RepeatedObject<T>& val, F func, SF sizefunc) {
+inline uint8_t* PackRepeatedPackedTag( uint8_t* buf, uint32_t id, const RepeatedObject<T>& val, F func, SF sizefunc) {
     buf = PackTag(buf, id, 2);
     buf = PackUInt32(buf, static_cast<uint32_t>(SizeRepeated(val, sizefunc)));
-    typename RepeatedObject<T>::iterator iter = val.begin(), iter_end = val.end();
+    typename RepeatedObject<T>::const_iterator iter = val.begin(), iter_end = val.end();
     while(iter != iter_end) {
         buf = func(buf, *(iter ++));
     }
@@ -584,6 +584,7 @@ inline bool UnpackRepeatedPacked(const uint8_t*& buf, size_t& leftSize, Repeated
     if(!UnpackUInt32(buf, leftSize, n))
         return false;
     const uint8_t* thisbuf = buf;
+    if (static_cast<size_t>(n) > leftSize) n = static_cast<uint32_t>(leftSize);
     size_t lsize = n;
     while(lsize > 0) {
         T singleVal;
@@ -602,6 +603,7 @@ inline bool UnpackRepeatedPtr(const uint8_t*& buf, size_t& leftSize, RepeatedObj
     if(!UnpackUInt32(buf, leftSize, n))
         return false;
     const uint8_t* thisbuf = buf;
+    if (static_cast<size_t>(n) > leftSize) n = static_cast<uint32_t>(leftSize);
     size_t nsize = n;
     T singleVal;
     if(!func(thisbuf, nsize, singleVal))
@@ -618,6 +620,7 @@ inline bool UnpackRepeatedPackedPtr(const uint8_t*& buf, size_t& leftSize, Repea
     if(!UnpackUInt32(buf, leftSize, n))
         return false;
     const uint8_t* thisbuf = buf;
+    if (static_cast<size_t>(n) > leftSize) n = static_cast<uint32_t>(leftSize);
     size_t nsize = n;
     while(nsize > 0) {
         T singleVal;

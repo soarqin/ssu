@@ -39,7 +39,7 @@ namespace ssu {
 class Object {
 public:
     template<typename T>
-    inline void Pack(T& buf) {
+    inline void Pack(T& buf) const {
         size_t pktSize = Size();
         if(pktSize > 0) {
             size_t sz = buf.size();
@@ -52,7 +52,7 @@ public:
         return UnpackBuffer(buf, length);
     }
     virtual size_t Size() const = 0;
-    virtual uint8_t* PackBuffer(uint8_t* buf) = 0;
+    virtual uint8_t* PackBuffer(uint8_t* buf) const = 0;
     virtual bool UnpackBuffer(const uint8_t*& buf, size_t& leftSize) = 0;
 };
 
